@@ -5,8 +5,8 @@ const calculate = require('./server/calculator')
 
 const app = express();
 
-//app.use(bodyParser.json()) i don't think we really need this.
-app.use(bodyParser.urlencoded({ extended: true })); //extended is only required if we anticipate having deeply nested objects.
+app.use(bodyParser.json())
+//app.use(bodyParser.urlencoded({ extended: true })); //extended is only required if we anticipate having deeply nested objects.
 //you should delete it if that won't be the case
 
 app.get("/", function(req, res){

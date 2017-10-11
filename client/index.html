@@ -4,19 +4,15 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
     <style>
-        .calculatorForm{
-            background: cornflowerblue;
-            width: 80%;
-        }
     </style>
     <title>TaxApple</title>
 
 </head>
 <body>
     <h1>Calculator</h1>
-        <div class="calculatorForm">
-            <form>
-                <div class="form-group">
+        <div>
+            <form onsubmit="calculate()">
+                <div class="form-group" id="calculatorForm">
                     <label for="currRate" color="red">Current Tax Rate</label>
                     <input type="text" class="form-control" id="currRate">
                     <label for="amount">Deposit Amount</label>
@@ -29,8 +25,70 @@
                     <input type="text" class="form-control" id="growthRate">
                     <label for="inflationRate">Investment Growth Rate</label>
                     <input type="text" class="form-control" id="inflationRate">
+                    <button type="submit" class="btn btn-default">Submit</button>
                 </div>
             </form>
         </div>
     </body>
+<script>
+
+    const calculateURL = "http://localhost:3000/calculate" //note: be sure that you don't change the server code so that it possible pings a different port than 3000
+
+    const formFields = ["currRate","amount","retireRate","growthRate","inflationRate"]
+    //createFormInputFields()
+
+    /*function createFormInputFields(){
+      var formGroup = document.getElementById("calculatorForm")
+      formFields.map(function(formField){
+            const field = formField.field
+            const display = formField.display
+            var label = document.createElement("label")
+            label.className+="form-control"
+            label.setAttribute("for", field)
+            label.value = display;
+            var input = document.createElement("input")
+            input.className+="form-control"
+            input.id=field
+            input.setAttribute("type", "text")
+            formGroup.appendChild(label);
+            formGroup.appendChild(input)
+      })
+    }*/
+
+
+    var formInput = null //lazily initialize on first call to calculate.
+    //elements aren't mounted to DOM when the script initially executes.
+
+
+    function cacheFormElements(){
+      formInput = formFields.reduce(function(acc, field){
+        acc[field] = document.getElementById(field)
+        return acc
+      }, {})
+    }
+
+    //todo: want to validate each field first; send immediate feedback to client so they can correct the mistake.
+    //however, should build analogous validations into the server
+    function calculate(){
+      if(!formInput) cacheFormElements();
+
+      var params  = Object.keys(formInput).reduce(function(acc, fieldName){
+        acc[fieldName] = formInput[fieldName].value
+        return acc
+      }, {});
+
+      alert(JSON.stringify(params))
+
+      var request = new XMLHttpRequest()
+
+      event.preventDefault()
+
+      request.open("POST", calculateURL, true)
+      request.setRequestHeader("Accept", "application/json")
+      request.setRequestHeader("Content-Type", "application/json")
+      request.send(JSON.stringify(params))
+    }
+
+
+</script>
 </html>
