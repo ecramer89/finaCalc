@@ -50,7 +50,6 @@ function computeRRSP(input){
 }
 
 function validate(input){
-  //check iffields null; if fields are numeric values, if fields are decimals within expected rate, etc.
   const validationErrors = []
   for(const field in input){
     const value = input[field]

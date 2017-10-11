@@ -6,25 +6,52 @@
     <style>
     </style>
     <title>TaxApple</title>
-
 </head>
 <body>
-    <h1>Calculator</h1>
-        <div>
+    <div class="container">
+        <div class="row">
+        <div class="col-sm-4" id="formPanel">
+        <h3>Calculator</h3>
             <form onsubmit="calculate()">
                 <div class="form-group" id="calculatorForm">
                 </div>
             </form>
         </div>
+        <div class="col-sm-8" id="resultPanel">
+            <h3>Result</h3>
+             <div class="container">
+                 <div class="row">
+                     <div class="col"></div>
+                     <div class="col">TSFA</div>
+                     <div class="col">RRSP</div>
+                 </div>
+                 <div class="row">
+                     <div class="col">After-Tax</div>
+                     <div class="col">D</div>
+                     <div class="col">E</div>
+                 </div>
+                 <div class="row">
+                     <div class="col">Future-Value</div>
+                     <div class="col">G</div>
+                     <div class="col">H</div>
+                 </div>
+                 <div class="row">
+                     <div class="col">Withdrawal Tax</div>
+                     <div class="col">J</div>
+                     <div class="col">K</div>
+                 </div>
+                 <div class="row">
+                     <div class="col">Withdrawal After-Tax</div>
+                     <div class="col">M</div>
+                     <div class="col">N</div>
+                 </div>
+
+             </div>
+            </div>
+        </div>
+    </div>
     </body>
 <script>
-
-    //todo: onchange,
-    //cache the values here (i.e., as state)
-    //and process-update the values in the components.
-    //see if bootstrap has a default "alert" that can be used
-    //make it so the button is not enabled unless all of the fields have been given definite values
-    //figure out why the missing values arent being treated as null
 
     const calculateURL = "http://localhost:3000/calculate" //note: be sure that you don't change the server code so that it possible pings a different port than 3000
     const digitPattern = "\\d+"
