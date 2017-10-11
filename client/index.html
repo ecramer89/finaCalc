@@ -8,8 +8,12 @@
             font-size: 10px;
             font-family: Verdana;
         }
-        .formField {
-
+        #explanatoryText{
+            font-size: 8px;
+        }
+        #resultPanel{
+            visibility: hidden;
+            display: none;
         }
     </style>
     <title>TaxApple</title>
@@ -17,8 +21,21 @@
 <body>
     <div class="container">
         <div class="row">
-        <div class="col" id="formPanel">
-        <h3>Calculator</h3>
+            <div class="col-sm-4">
+            <h4>TSFA or RRSP?</h4>
+                <div id="explanatoryText">
+                    TSFAs and RRSPs are alternative tax free investment savings account.
+                    Both can help you save for retirement, so which should you choose?
+                    An <b>RRSP</b> allows you to defer paying tax on your investment.
+                    You don't pay any tax on the money you deposit, but you have to pay taxes on the money you withdraw.
+                    An <b>TSFA</b> is the opposite. You pay tax when you deposit, but you don't pay any taxes on the money you withdraw.
+                    An <b>RRSP</b> is great if you're currently paying a high tax and you don't intend to withdraw until you're retired, when your income and taxes are less.
+                    A <b>TSFA</b> is great if you're currently earning less than you expect to and you want to put some money away to save for a house or a car.
+                    Still feeling overwhelmed? Our calculator can help.
+                    Fill out the form to the right and click 'submit' to see which account is better for you.
+                </div>
+            </div>
+        <div class="col-sm-8" id="formPanel">
             <form onsubmit="calculate()">
                 <div class="container">
                     <div class="row" id="calculatorForm"></div>
@@ -28,7 +45,7 @@
         </div>
         <div class="row" id="resultPanel">
             <div class="col">
-            <h3>Result</h3>
+            <h4>Results:</h4>
             <div class="container">
                 <div class="row" id="resultLabels">
                     <div class="col">Account Type</div>
@@ -39,17 +56,17 @@
                 </div>
                 <div class="row" id="TSFA">
                     <div class="col">TSFA</div>
-                    <div class="col" id="TSFA-afterTax">B</div>
-                    <div class="col" id="TSFA-futureValue">C</div>
-                    <div class="col" id="TSFA-amountTaxedOnWithdrawal">D</div>
-                    <div class="col" id="TSFA-afterTaxFutureValue">E</div>
+                    <div class="col" id="TSFA-afterTax"></div>
+                    <div class="col" id="TSFA-futureValue"></div>
+                    <div class="col" id="TSFA-amountTaxedOnWithdrawal"></div>
+                    <div class="col" id="TSFA-afterTaxFutureValue"></div>
                 </div>
                 <div class="row" id="RRSP">
                     <div class="col">RRSP</div>
-                    <div class="col" id="RRSP-afterTax">B</div>
-                    <div class="col" id="RRSP-futureValue">C</div>
-                    <div class="col" id="RRSP-amountTaxedOnWithdrawal">D</div>
-                    <div class="col" id="RRSP-afterTaxFutureValue">E</div>
+                    <div class="col" id="RRSP-afterTax"></div>
+                    <div class="col" id="RRSP-futureValue"></div>
+                    <div class="col" id="RRSP-amountTaxedOnWithdrawal"></div>
+                    <div class="col" id="RRSP-afterTaxFutureValue"></div>
                 </div>
             </div>
         </div>
@@ -167,6 +184,9 @@
     }
 
       function displayInResultsPanels(data){
+        const resultsPanel = document.getElementById("resultPanel")
+        resultsPanel.style.visibility = "visible"
+        resultsPanel.style.display = "block"
         const TSFAResults = document.getElementById("TSFA")
         const RRSPResults = document.getElementById("RRSP")
         displayReturnsForTaxAccount(TSFAResults, data.TSFA)
@@ -176,15 +196,12 @@
       function displayReturnsForTaxAccount(accountResultsPanel, dataForPanel){
         const accountType = accountResultsPanel.id
         const resultsFieldNames=Object.keys(dataForPanel)
-        debugger
         for(const fieldName of resultsFieldNames){
           const id = accountType+"-"+fieldName
-          debugger
           const resultCell = document.getElementById(id)
           resultCell.innerHTML = dataForPanel[fieldName]
-          debugger
-
         }
+
       }
 
 
