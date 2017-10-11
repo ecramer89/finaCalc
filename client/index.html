@@ -22,12 +22,12 @@
     const calculateURL = "http://localhost:3000/calculate" //note: be sure that you don't change the server code so that it possible pings a different port than 3000
 
     const formFields = [
-      {field: "currentTaxRate", label: "Your Current Marginal Tax Rate"},
-      {field: "amountInvested",label: "The Amount You Intend To Invest"},
-      {field: "retirementTaxRate", label: "Your Retirement Tax Rate"},
-      {field: "investmentGrowthRate", label: "Your Investment Growth Rate"},
-      {field: "inflationRate", label: "The Inflation Rate"},
-      {field: "yearsInvested", label: "Years You Plan To Invest"},
+      {field: "currentTaxRate", label: "Your Current Marginal Tax Rate", placeholder:"15%"},
+      {field: "amountInvested",label: "The Amount You Intend To Invest", placeholder: "1000.00$"},
+      {field: "retirementTaxRate", label: "Your Retirement Tax Rate", placeholder: "5%"},
+      {field: "investmentGrowthRate", label: "Your Investment Growth Rate", placeholder: "3%"},
+      {field: "inflationRate", label: "The Inflation Rate", placeholder: "5%"},
+      {field: "yearsInvested", label: "Years You Plan To Invest", placeholder: "30"},
     ]
 
 
@@ -36,8 +36,11 @@
     function createFormInputFields(){
       var formGroup = document.getElementById("calculatorForm")
       Object.keys(formFields).map(function(field){
-            formGroup.insertAdjacentHTML("beforeEnd", '<label for="'+field+'">'+formFields[field].label+'</label>');
-            formGroup.insertAdjacentHTML("beforeEnd", '<input type="text" class="form-control" id="'+field+'">');
+            const formFieldData = formFields[field]
+            const label = formFieldData.label
+            const placeholder= formFieldData.placeholder
+            formGroup.insertAdjacentHTML("beforeEnd", '<label for="'+field+'">'+label+'</label>');
+            formGroup.insertAdjacentHTML("beforeEnd", '<input type="text" placeholder="'+placeholder+'" class="form-control" id="'+field+'">');
       })
       formGroup.insertAdjacentHTML("beforeEnd",'<button type="submit" class="btn btn-default">Submit</button>')
     }
@@ -45,7 +48,7 @@
 
     var formInput = null //lazily initialize on first call to calculate.
     //elements aren't mounted to DOM when the script initially executes.
-    
+
     function cacheFormElements(){
       formInput = Object.keys(formFields).reduce(function(acc, field){
         acc[field] = document.getElementById(field)
@@ -61,6 +64,9 @@
         acc[fieldName] = formInput[fieldName].value
         return acc
       }, {});
+
+      //nb, will need to define input cleaners for each (define them in the object) that extract the appropriate data
+      //from it using regex
 
       alert(JSON.stringify(params))
 
