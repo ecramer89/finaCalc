@@ -1,5 +1,6 @@
-function calculate(args){
-  return "foo"
+function calculate(data){
+  return JSON.stringify(data)
+
 }
 
 

@@ -2,15 +2,33 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    <style>
+        .calculatorForm{
+            background: cornflowerblue;
+            width: 80%;
+        }
+    </style>
     <title>TaxApple</title>
+
 </head>
 <body>
     <h1>Calculator</h1>
-        <div>
+        <div class="calculatorForm">
             <form>
                 <div class="form-group">
-                    <label type="text">Current Marginal Tax Rate</label>
+                    <label for="currRate" color="red">Current Tax Rate</label>
+                    <input type="text" class="form-control" id="currRate">
+                    <label for="amount">Deposit Amount</label>
+                    <input type="text" class="form-control" id="amount">
+                    <label for="retireRate">Tax Rate in Retirement</label>
+                    <input type="text" class="form-control" id="retireRate">
+                    <label for="retireRate">Years Invested</label>
+                    <input type="text" class="form-control" id="years">
+                    <label for="growthRate">Investment Growth Rate</label>
+                    <input type="text" class="form-control" id="growthRate">
+                    <label for="inflationRate">Investment Growth Rate</label>
+                    <input type="text" class="form-control" id="inflationRate">
                 </div>
             </form>
         </div>
