@@ -1,5 +1,5 @@
 function calculate(args){
-  return args.marginal
+  return "foo"
 }
 
 
