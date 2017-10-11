@@ -53,11 +53,11 @@ function validate(input){
   //check iffields null; if fields are numeric values, if fields are decimals within expected rate, etc.
   const validationErrors = []
   for(const field in input){
-    if(!field){
+    const value = input[field]
+    if(!value){
       validationErrors.push({field: field, message: field+" is required."})
     }
     else {
-      const value = input[field]
       switch(field){
         case "currentTaxRate":
         case "retirementTaxRate":
