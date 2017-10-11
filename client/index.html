@@ -13,18 +13,25 @@
         <div>
             <form onsubmit="calculate()">
                 <div class="form-group" id="calculatorForm">
-                    <label for="currRate" color="red">Current Tax Rate</label>
-                    <input type="text" class="form-control" id="currRate">
-                    <label for="amount">Deposit Amount</label>
-                    <input type="text" class="form-control" id="amount">
-                    <label for="retireRate">Tax Rate in Retirement</label>
-                    <input type="text" class="form-control" id="retireRate">
-                    <label for="retireRate">Years Invested</label>
-                    <input type="text" class="form-control" id="years">
-                    <label for="growthRate">Investment Growth Rate</label>
-                    <input type="text" class="form-control" id="growthRate">
-                    <label for="inflationRate">Investment Growth Rate</label>
+
+                    <label for="currentTaxRate" color="red">Current Tax Rate</label>
+                    <input type="text" class="form-control" id="currentTaxRate">
+
+                    <label for="amountInvested">Amount Invested</label>
+                    <input type="text" class="form-control" id="amountInvested">
+
+                    <label for="retirementTaxRate">Tax Rate in Retirement</label>
+                    <input type="text" class="form-control" id="retirementTaxRate">
+
+                    <label for="investmentGrowthRate">Investment Growth Rate</label>
+                    <input type="text" class="form-control" id="investmentGrowthRate">
+
+                    <label for="inflationRate">Inflation Rate</label>
                     <input type="text" class="form-control" id="inflationRate">
+
+                    <label for="yearsInvested">Years Invested</label>
+                    <input type="text" class="form-control" id="yearsInvested">
+
                     <button type="submit" class="btn btn-default">Submit</button>
                 </div>
             </form>
@@ -34,7 +41,14 @@
 
     const calculateURL = "http://localhost:3000/calculate" //note: be sure that you don't change the server code so that it possible pings a different port than 3000
 
-    const formFields = ["currRate","amount","retireRate","growthRate","inflationRate"]
+    const formFields = [
+      "currentTaxRate",
+      "amountInvested",
+      "retirementTaxRate",
+      "investmentGrowthRate",
+      "inflationRate",
+      "yearsInvested"
+    ]
     //createFormInputFields()
 
     /*function createFormInputFields(){

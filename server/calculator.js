@@ -12,12 +12,41 @@ function calculate(req, res){
   }
 }
 
+function compute(input, computeAfterTax, computeAfterTaxFutureValue){
+  const investmentGrowthRate = input.investmentGrowthRate
+  const inflationRate = input.inflationRate
+  const yearsInvested = input.yearsInvested
+
+  const afterTax = computeAfterTax(input.amountInvested, input.currentTaxRate) //todo define a "to decimal" operation in the contract class.
+  //it should perform the same modifications to the inputs as do our contracts
+  const rateOfReturn = (1 + investmentGrowthRate) / (1 + inflationRate) -1; //beware of math errors. may want to use some rounding logic?
+  //check on therounding rules
+  const futureValue = afterTax * Math.pow((1 + rateOfReturn/100), rateOfReturn*yearsInvested);
+  const afterTaxFutureValue = computeAfterTaxFutureValue(futureValue,input.retirementTaxRate)
+
+  return {
+    afterTax: roundTo(afterTax, 2),
+    futureValue: roundTo(futureValue, 2),
+    afterTaxFutureValue: roundTo(afterTaxFutureValue,2)
+  }
+}
+
 function computeTSFA(input){
-  return 5
+  return compute(input, function(amountInvested, currentTaxRate){
+    return amountInvested * (1 - currentTaxRate/100)
+  },
+  function(futureValue){
+    return futureValue
+  })
 }
 
 function computeRRSP(input){
- return 6
+  return compute(input, function(amountInvested){
+      return amountInvested
+    },
+    function(futureValue, retirementTaxRate){
+      return futureValue * (1 - retirementTaxRate/100)
+    })
 }
 
 function validate(){
@@ -26,14 +55,22 @@ function validate(){
   //validate each field
 }
 
+
+//todo this class should convert percentage inputs to decimal. NO ROUNDING until end
 class CalculatorInput{
   constructor(data){
-    this.currRate = data.currRate || null
-    this.amount = data.amount || null
-    this.retireRate = data.retireRate || null
-    this.growthRate = data.growthRate || null
+    this.currentTaxRate = data.currentTaxRate || null
+    this.amountInvested = data.amountInvested || null
+    this.retirementTaxRate = data.retirementTaxRate || null
+    this.investmentGrowthRate = data.investmentGrowthRate || null
     this.inflationRate = data.inflationRate || null
+    this.yearsInvested = data.yearsInvested || null
   }
+}
+
+function roundTo(value, places){
+  const shift = Math.pow(10, places)
+  return Math.floor(value * shift) / shift;
 }
 
 
