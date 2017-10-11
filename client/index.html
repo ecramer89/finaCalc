@@ -99,11 +99,22 @@
               alert("done: "+request.responseText); //todo need to populate another element with the result of the request
               break;
             case 400:
-              alert("error: "+request.responseText) //todo populate the fields with result.
+              const errors = JSON.parse(request.responseText)
+              errors.forEach(function(e){
+                alert("ibjecting e")
+                injectErrorMessageIntoRelevantField(e)
+              })
               break;
           }
 
         }
+      }
+
+      function injectErrorMessageIntoRelevantField(error){
+        if(!formInput) cacheFormElements()
+        element = formInput[error.field]
+        element.value = error.message
+
       }
 
 
