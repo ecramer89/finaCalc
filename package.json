@@ -1,0 +1,23 @@
+{
+  "name": "y",
+  "version": "1.0.0",
+  "description": "Simple browser based calculator to help users decide whether to invest in a TSFA or an RRSP.",
+  "main": "index.js",
+  "scripts": {
+    "test": "test",
+    "start": "nodemon index.js"
+  },
+  "keywords": [
+    "calculator",
+    "finances",
+    "taxes"
+  ],
+  "author": "Emily Cramer",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^1.12.1"
+  },
+  "dependencies": {
+    "body-parser": "^1.18.2"
+  }
+}
