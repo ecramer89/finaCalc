@@ -20,7 +20,8 @@
         <div class="col" id="formPanel">
         <h3>Calculator</h3>
             <form onsubmit="calculate()">
-                <div class="form-group" id="calculatorForm">
+                <div class="container">
+                    <div class="row" id="calculatorForm"></div>
                 </div>
             </form>
         </div>
@@ -86,16 +87,48 @@
 
     //form
 
+    /*
+    need as many form groups as num fields / fields per col
+
+     <div class="col form-group">
+     </div>
+
+     */
+
+
     function createFormInputFields(){
-      var formGroup = document.getElementById("calculatorForm")
-      Object.keys(formFields).map(function(field){
-            const fieldData = formFields[field]
-            const label = fieldData.label
-            const placeholder= fieldData.placeholder
-            formGroup.insertAdjacentHTML("beforeEnd", '<label class="formField" for="'+field+'">'+label+'</label>');
-            formGroup.insertAdjacentHTML("beforeEnd", '<input type="text" placeholder="'+placeholder+'" class="form-control formField input-sm" id="'+field+'">');
-      })
-      formGroup.insertAdjacentHTML("beforeEnd",'<button type="submit" class="btn btn-default">Submit</button>')
+      const fieldsPerCol = 3;
+      var formContainer = document.getElementById("calculatorForm")
+      const fieldNames = Object.keys(formFields)
+      const numFields = fieldNames.length
+      var formGroup = createFormGroup()
+      formContainer.appendChild(formGroup)
+      var currFormGroup = 0
+
+      for(var i = 0; i< numFields;i++){
+         const forFormGroup = Math.floor(i/fieldsPerCol)
+            if(forFormGroup != currFormGroup){
+              formGroup = createFormGroup()
+              formContainer.appendChild(formGroup)
+              currFormGroup = forFormGroup
+            }
+        addFormFieldLabelAndInputToFormGroup(formGroup, fieldNames[i])
+      }
+      formContainer.insertAdjacentHTML("afterEnd",'<div class="row"><button type="submit" class="btn btn-default">Submit</button></div>')
+    }
+
+    function createFormGroup(){
+      var formGroup = document.createElement("div")
+      formGroup.className+="col form-group"
+      return formGroup
+    }
+
+    function addFormFieldLabelAndInputToFormGroup(formGroup, field){
+      const fieldData = formFields[field]
+      const label = fieldData.label
+      const placeholder= fieldData.placeholder
+      formGroup.insertAdjacentHTML("beforeEnd", '<label class="formField" for="'+field+'">'+label+'</label>');
+      formGroup.insertAdjacentHTML("beforeEnd", '<input type="text" placeholder="'+placeholder+'" class="form-control formField input-sm" id="'+field+'">');
     }
 
 
