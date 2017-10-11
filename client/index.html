@@ -4,51 +4,59 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
     <style>
+        body {
+            font-size: 10px;
+            font-family: Verdana;
+        }
+        .formField {
+
+        }
     </style>
     <title>TaxApple</title>
 </head>
 <body>
     <div class="container">
         <div class="row">
-        <div class="col-sm-4" id="formPanel">
+        <div class="col" id="formPanel">
         <h3>Calculator</h3>
             <form onsubmit="calculate()">
                 <div class="form-group" id="calculatorForm">
                 </div>
             </form>
         </div>
-        <div class="col-sm-8" id="resultPanel">
+        </div>
+        <div class="row" id="resultPanel">
+            <div class="col">
             <h3>Result</h3>
-             <div class="container">
-                 <div class="row">
-                     <div class="col"></div>
-                     <div class="col">TSFA</div>
-                     <div class="col">RRSP</div>
-                 </div>
-                 <div class="row">
-                     <div class="col">After-Tax</div>
-                     <div class="col">D</div>
-                     <div class="col">E</div>
-                 </div>
-                 <div class="row">
-                     <div class="col">Future-Value</div>
-                     <div class="col">G</div>
-                     <div class="col">H</div>
-                 </div>
-                 <div class="row">
-                     <div class="col">Withdrawal Tax</div>
-                     <div class="col">J</div>
-                     <div class="col">K</div>
-                 </div>
-                 <div class="row">
-                     <div class="col">Withdrawal After-Tax</div>
-                     <div class="col">M</div>
-                     <div class="col">N</div>
-                 </div>
-
-             </div>
+            <div class="container">
+                <div class="row">
+                    <div class="col"></div>
+                    <div class="col">TSFA</div>
+                    <div class="col">RRSP</div>
+                </div>
+                <div class="row">
+                    <div class="col">After-Tax</div>
+                    <div class="col">D</div>
+                    <div class="col">E</div>
+                </div>
+                <div class="row">
+                    <div class="col">Future-Value</div>
+                    <div class="col">G</div>
+                    <div class="col">H</div>
+                </div>
+                <div class="row">
+                    <div class="col">Withdrawal Tax</div>
+                    <div class="col">J</div>
+                    <div class="col">K</div>
+                </div>
+                <div class="row">
+                    <div class="col">Withdrawal After-Tax</div>
+                    <div class="col">M</div>
+                    <div class="col">N</div>
+                </div>
             </div>
         </div>
+    </div>
     </div>
     </body>
 <script>
@@ -76,14 +84,16 @@
 
     createFormInputFields()
 
+    //form
+
     function createFormInputFields(){
       var formGroup = document.getElementById("calculatorForm")
       Object.keys(formFields).map(function(field){
             const fieldData = formFields[field]
             const label = fieldData.label
             const placeholder= fieldData.placeholder
-            formGroup.insertAdjacentHTML("beforeEnd", '<label for="'+field+'">'+label+'</label>');
-            formGroup.insertAdjacentHTML("beforeEnd", '<input type="text" placeholder="'+placeholder+'" class="form-control" id="'+field+'">');
+            formGroup.insertAdjacentHTML("beforeEnd", '<label class="formField" for="'+field+'">'+label+'</label>');
+            formGroup.insertAdjacentHTML("beforeEnd", '<input type="text" placeholder="'+placeholder+'" class="form-control formField input-sm" id="'+field+'">');
       })
       formGroup.insertAdjacentHTML("beforeEnd",'<button type="submit" class="btn btn-default">Submit</button>')
     }
