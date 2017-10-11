@@ -177,8 +177,10 @@
         const accountType = accountResultsPanel.id
         const resultsFieldNames=Object.keys(dataForPanel)
         debugger
-        for(const fieldName in resultsFieldNames){
-          const resultCell = document.getElementById(accountType+"-"+fieldName)
+        for(const fieldName of resultsFieldNames){
+          const id = accountType+"-"+fieldName
+          debugger
+          const resultCell = document.getElementById(id)
           resultCell.innerHTML = dataForPanel[fieldName]
           debugger
 
