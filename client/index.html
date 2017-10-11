@@ -15,6 +15,9 @@
             visibility: hidden;
             display: none;
         }
+        .resultLabel{
+            font-weight: bold;
+        }
     </style>
     <title>TaxApple</title>
 </head>
@@ -45,24 +48,23 @@
         </div>
         <div class="row" id="resultPanel">
             <div class="col">
-            <h4>Results:</h4>
             <div class="container">
                 <div class="row" id="resultLabels">
-                    <div class="col">Account Type</div>
-                    <div class="col">After-Tax</div>
-                    <div class="col">Future-Value</div>
-                    <div class="col">Amount Taxed</div>
-                    <div class="col">Withdrawal After-Tax</div>
+                    <div class="col resultLabel">Account Type</div>
+                    <div class="col resultLabel">After-Tax</div>
+                    <div class="col resultLabel">Future-Value</div>
+                    <div class="col resultLabel">Amount Taxed</div>
+                    <div class="col resultLabel">Withdrawal After-Tax</div>
                 </div>
                 <div class="row" id="TSFA">
-                    <div class="col">TSFA</div>
+                    <div class="col resultLabel">TSFA</div>
                     <div class="col" id="TSFA-afterTax"></div>
                     <div class="col" id="TSFA-futureValue"></div>
                     <div class="col" id="TSFA-amountTaxedOnWithdrawal"></div>
                     <div class="col" id="TSFA-afterTaxFutureValue"></div>
                 </div>
                 <div class="row" id="RRSP">
-                    <div class="col">RRSP</div>
+                    <div class="col resultLabel">RRSP</div>
                     <div class="col" id="RRSP-afterTax"></div>
                     <div class="col" id="RRSP-futureValue"></div>
                     <div class="col" id="RRSP-amountTaxedOnWithdrawal"></div>
@@ -71,6 +73,9 @@
             </div>
         </div>
     </div>
+        <div class="row" id="resultsSummary">
+
+        </div>
     </div>
     </body>
 <script>
@@ -96,6 +101,12 @@
       investmentGrowthRate: {label: "Your Investment Growth Rate", placeholder: "2%", pattern: percentagePattern},
       inflationRate: {label: "The Inflation Rate", placeholder: "5%", pattern: percentagePattern},
       yearsInvested: {label: "Years You Plan To Invest", placeholder: "30", pattern: "\\d+"}
+    }
+
+    const resultsSummaries = {
+      either: "The two accounts break even. You may wish to double-check your estimates of your current and expected retirement income tax brackets.",
+      TSFA: "The TSFA would be a better choice for you. Be sure to re-calculate if you extend the investment period or adjust your estimated future tax bracket.",
+      RRSP: "The RRSP would be a better choice for you. Be sure to re-calculate if you anticipate having to withdraw some of your money earlier."
     }
 
     createFormInputFields()
@@ -131,8 +142,8 @@
       const fieldData = formFields[field]
       const label = fieldData.label
       const placeholder= fieldData.placeholder
-      formGroup.insertAdjacentHTML("beforeEnd", '<label class="formField" for="'+field+'">'+label+'</label>');
-      formGroup.insertAdjacentHTML("beforeEnd", '<input type="text" placeholder="'+placeholder+'" class="form-control formField input-sm" id="'+field+'">');
+      formGroup.insertAdjacentHTML("beforeEnd", '<label for="'+field+'">'+label+'</label>');
+      formGroup.insertAdjacentHTML("beforeEnd", '<input type="text" placeholder="'+placeholder+'" class="form-control input-sm" id="'+field+'">');
     }
 
 
@@ -165,7 +176,6 @@
           switch (request.status) {
             case 200:
               const data = JSON.parse(request.responseText)
-              alert(request.responseText)
               displayInResultsPanels(data)
               break;
             case 400:
@@ -175,7 +185,6 @@
               })
               break;
           }
-
         }
       }
 
@@ -191,7 +200,28 @@
         const RRSPResults = document.getElementById("RRSP")
         displayReturnsForTaxAccount(TSFAResults, data.TSFA)
         displayReturnsForTaxAccount(RRSPResults, data.RRSP)
+
+        const TSFAAfterTaxFutureValue = data.TSFA.afterTaxFutureValue
+        const RRSPAfterTaxFutureValue = data.RRSP.afterTaxFutureValue
+        const comparison = TSFAAfterTaxFutureValue - RRSPAfterTaxFutureValue
+        const betterChoice = comparison == 0 ? "either" : (comparison >  0 ?  "TSFA" : "RRSP")
+        highlightAfterTaxFutureCellFor(betterChoice)
+        summarize(betterChoice)
       }
+
+
+    function highlightAfterTaxFutureCellFor(betterAccount){
+      if(betterAccount == "either") return
+      const resultCell = document.getElementById(betterAccount+"-afterTaxFutureValue")
+      resultCell.style.backgroundColor="yellow"
+    }
+
+    function summarize(betterAccount){
+      const summary = document.getElementById("resultsSummary")
+      debugger
+      summary.innerText = resultsSummaries[betterAccount]
+    }
+
 
       function displayReturnsForTaxAccount(accountResultsPanel, dataForPanel){
         const accountType = accountResultsPanel.id
@@ -201,7 +231,6 @@
           const resultCell = document.getElementById(id)
           resultCell.innerHTML = dataForPanel[fieldName]
         }
-
       }
 
 
