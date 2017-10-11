@@ -101,7 +101,6 @@
             case 400:
               const errors = JSON.parse(request.responseText)
               errors.forEach(function(e){
-                alert("ibjecting e")
                 injectErrorMessageIntoRelevantField(e)
               })
               break;
