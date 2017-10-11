@@ -16,7 +16,7 @@ app.get("/", function(req, res){
 //error handling: should validate the request; provide some feedback to the user.
 //
 app.post("/calculate", function(req, res){
-   res.send(calculate(req.body))
+   calculate(req, res)
 })
 
 app.listen(3000, function(){
