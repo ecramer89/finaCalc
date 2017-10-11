@@ -30,30 +30,26 @@
             <div class="col">
             <h3>Result</h3>
             <div class="container">
-                <div class="row">
-                    <div class="col"></div>
-                    <div class="col">TSFA</div>
-                    <div class="col">RRSP</div>
-                </div>
-                <div class="row">
+                <div class="row" id="resultLabels">
+                    <div class="col">Account Type</div>
                     <div class="col">After-Tax</div>
-                    <div class="col">D</div>
-                    <div class="col">E</div>
-                </div>
-                <div class="row">
                     <div class="col">Future-Value</div>
-                    <div class="col">G</div>
-                    <div class="col">H</div>
-                </div>
-                <div class="row">
-                    <div class="col">Withdrawal Tax</div>
-                    <div class="col">J</div>
-                    <div class="col">K</div>
-                </div>
-                <div class="row">
+                    <div class="col">Amount Taxed</div>
                     <div class="col">Withdrawal After-Tax</div>
-                    <div class="col">M</div>
-                    <div class="col">N</div>
+                </div>
+                <div class="row" id="TSFA">
+                    <div class="col">TSFA</div>
+                    <div class="col" id="TSFA-afterTax">B</div>
+                    <div class="col" id="TSFA-futureValue">C</div>
+                    <div class="col" id="TSFA-amountTaxedOnWithdrawal">D</div>
+                    <div class="col" id="TSFA-afterTaxFutureValue">E</div>
+                </div>
+                <div class="row" id="RRSP">
+                    <div class="col">RRSP</div>
+                    <div class="col" id="RRSP-afterTax">B</div>
+                    <div class="col" id="RRSP-futureValue">C</div>
+                    <div class="col" id="RRSP-amountTaxedOnWithdrawal">D</div>
+                    <div class="col" id="RRSP-afterTaxFutureValue">E</div>
                 </div>
             </div>
         </div>
@@ -62,39 +58,30 @@
     </body>
 <script>
 
+
     const calculateURL = "http://localhost:3000/calculate" //note: be sure that you don't change the server code so that it possible pings a different port than 3000
-    const digitPattern = "\\d+"
+    const percentagePattern = "\\d+(\.\\d+)?"
     const monetaryAmountPattern = "\\d+(\.\\d{1,2})?"
     function parseInputWithPattern(input, pattern){
       const matches = input.match(pattern)
       return matches ? matches[0] : ""
     }
 
+    //add describes that include expected value
     const formFields = {
-      currentTaxRate: {label: "Your Current Marginal Tax Rate", placeholder: "15%", pattern: digitPattern},
+      currentTaxRate: {label: "Your Current Marginal Tax Rate", placeholder: "15%", pattern: percentagePattern},
       amountInvested: {
         label: "The Amount You Intend To Invest",
         placeholder: "1000.00$",
         pattern: monetaryAmountPattern
       },
-      retirementTaxRate: {label: "Your Retirement Tax Rate", placeholder: "5%", pattern: digitPattern},
-      investmentGrowthRate: {label: "Your Investment Growth Rate", placeholder: "3%", pattern: digitPattern},
-      inflationRate: {label: "The Inflation Rate", placeholder: "5%", pattern: digitPattern},
-      yearsInvested: {label: "Years You Plan To Invest", placeholder: "30", pattern: digitPattern}
+      retirementTaxRate: {label: "Your Retirement Tax Rate", placeholder: "5%", pattern: percentagePattern},
+      investmentGrowthRate: {label: "Your Investment Growth Rate", placeholder: "2%", pattern: percentagePattern},
+      inflationRate: {label: "The Inflation Rate", placeholder: "5%", pattern: percentagePattern},
+      yearsInvested: {label: "Years You Plan To Invest", placeholder: "30", pattern: "\\d+"}
     }
 
     createFormInputFields()
-
-    //form
-
-    /*
-    need as many form groups as num fields / fields per col
-
-     <div class="col form-group">
-     </div>
-
-     */
-
 
     function createFormInputFields(){
       const fieldsPerCol = 3;
@@ -142,19 +129,13 @@
       }, {})
     }
 
-    //todo: want to validate each field first; send immediate feedback to client so they can correct the mistake.
-    //however, should build analogous validations into the server
-    function calculate(){
-      if(!formInput) cacheFormElements();
-      var params  = Object.keys(formInput).reduce(function(acc, fieldName){
+    function calculate() {
+      if (!formInput) cacheFormElements();
+      var params = Object.keys(formInput).reduce(function (acc, fieldName) {
         acc[fieldName] = parseInputWithPattern(formInput[fieldName].value, formFields[fieldName].pattern)
         return acc
       }, {});
 
-      //nb, will need to define input cleaners for each (define them in the object) that extract the appropriate data
-      //from it using regex
-
-      alert(JSON.stringify(params))
 
       var request = new XMLHttpRequest()
 
@@ -163,21 +144,48 @@
       request.setRequestHeader("Content-Type", "application/json")
 
       request.onreadystatechange = function () {
-        if(request.readyState === XMLHttpRequest.DONE) {
-          switch(request.status){
+        if (request.readyState === XMLHttpRequest.DONE) {
+          switch (request.status) {
             case 200:
-              alert("done: "+request.responseText); //todo need to populate another element with the result of the request
+              const data = JSON.parse(request.responseText)
+              alert(request.responseText)
+              displayInResultsPanels(data)
               break;
             case 400:
               const errors = JSON.parse(request.responseText)
-              errors.forEach(function(e){
-                injectErrorMessageIntoRelevantField(e)
+              errors.forEach(function (err) {
+                injectErrorMessageIntoRelevantField(err)
               })
               break;
           }
 
         }
       }
+
+      request.send(JSON.stringify(params))
+      event.preventDefault()
+    }
+
+      function displayInResultsPanels(data){
+        const TSFAResults = document.getElementById("TSFA")
+        const RRSPResults = document.getElementById("RRSP")
+        displayReturnsForTaxAccount(TSFAResults, data.TSFA)
+        displayReturnsForTaxAccount(RRSPResults, data.RRSP)
+      }
+
+      function displayReturnsForTaxAccount(accountResultsPanel, dataForPanel){
+        const accountType = accountResultsPanel.id
+        const resultsFieldNames=Object.keys(dataForPanel)
+        debugger
+        for(const fieldName in resultsFieldNames){
+          const resultCell = document.getElementById(accountType+"-"+fieldName)
+          resultCell.innerHTML = dataForPanel[fieldName]
+          debugger
+
+        }
+      }
+
+
 
       function injectErrorMessageIntoRelevantField(error){
         if(!formInput) cacheFormElements()
@@ -186,11 +194,6 @@
 
       }
 
-
-      request.send(JSON.stringify(params))
-      event.preventDefault()
-
-    }
 
 
 </script>

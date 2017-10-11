@@ -12,7 +12,7 @@ function calculate(req, res){
   }
 }
 
-function compute(input, computeAfterTax, computeAfterTaxFutureValue){
+function compute(input, computeAfterTax, computeAmountTaxedOnWithdrawal){
   const investmentGrowthRate = input.investmentGrowthRate
   const inflationRate = input.inflationRate
   const yearsInvested = input.yearsInvested
@@ -22,11 +22,13 @@ function compute(input, computeAfterTax, computeAfterTaxFutureValue){
   const rateOfReturn = (1 + investmentGrowthRate) / (1 + inflationRate) -1; //beware of math errors. may want to use some rounding logic?
 
   const futureValue = afterTax * Math.pow((1 + rateOfReturn/100), yearsInvested);
-  const afterTaxFutureValue = computeAfterTaxFutureValue(futureValue,input.retirementTaxRate)
+  const amountTaxedOnWithdrawal = computeAmountTaxedOnWithdrawal(futureValue,input.retirementTaxRate)
+  const afterTaxFutureValue = futureValue - amountTaxedOnWithdrawal
 
   return {
     afterTax: roundTo(afterTax, 2),
     futureValue: roundTo(futureValue, 2),
+    amountTaxedOnWithdrawal: roundTo(amountTaxedOnWithdrawal,2),
     afterTaxFutureValue: roundTo(afterTaxFutureValue,2)
   }
 }
@@ -35,8 +37,8 @@ function computeTSFA(input){
   return compute(input, function(amountInvested, currentTaxRate){
     return amountInvested * (1 - currentTaxRate/100)
   },
-  function(futureValue){
-    return futureValue
+  function(){
+    return 0
   })
 }
 
@@ -45,7 +47,7 @@ function computeRRSP(input){
       return amountInvested
     },
     function(futureValue, retirementTaxRate){
-      return futureValue * (1 - retirementTaxRate/100)
+      return futureValue * retirementTaxRate/100
     })
 }
 
