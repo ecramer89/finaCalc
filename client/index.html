@@ -9,7 +9,7 @@
             font-family: Verdana;
         }
         #explanatoryText{
-            font-size: 65%;
+            font-size: 70%;
         }
         #resultPanel{
             visibility: hidden;
@@ -24,21 +24,31 @@
 <body>
     <div class="container">
         <div class="row">
-            <div class="col-sm-4">
-            <h4>TSFA or RRSP?</h4>
+                <h4>TSFA or RRSP?</h4>
                 <div id="explanatoryText">
+                    <p>
                     TSFAs and RRSPs are alternative tax free investment savings account.
                     Both can help you save for retirement, so which should you choose?
+                    </p>
+                    <p>
                     An <b>RRSP</b> allows you to defer paying tax on your investment.
                     You don't pay any tax on the money you deposit, but you have to pay taxes on the money you withdraw.
+                    </p>
+                    <p>
                     An <b>TSFA</b> is the opposite. You pay tax when you deposit, but you don't pay any taxes on the money you withdraw.
+                    </p>
+                    <p>
+                    <b><i>To summarize:</i></b>
                     An <b>RRSP</b> is great if you're currently paying a high tax and you don't intend to withdraw until you're retired, when your income and taxes are less.
                     A <b>TSFA</b> is great if you're currently earning less than you expect to and you want to put some money away to save for a house or a car.
+                    <p>
                     <b><i>Still feeling overwhelmed? Our calculator can help</b></i>.
                     Fill out the form to the right and click 'submit' to see which account is better for you.
-                </div>
+                </p>
             </div>
-        <div class="col-sm-8" id="formPanel">
+        </div>
+        <div class="row">
+        <div class="col" id="formPanel">
             <form onsubmit="calculate()">
                 <div class="container">
                     <div class="row" id="calculatorForm"></div>
@@ -92,34 +102,41 @@
     //add describes that include expected value
     const formFields = {
       currentTaxRate: {
-        label: "Your Current Marginal Tax Rate",
+        label: "Current Marginal Tax Rate",
         placeholder: "15%",
-        pattern: percentagePattern
+        pattern: percentagePattern,
+        description: "This is highest income tax bracket that applies to you, based on your current income."
       },
       amountInvested: {
-        label: "The Amount You Intend To Invest",
+        label: "Deposit",
         placeholder: "1000.00$",
-        pattern: monetaryAmountPattern
+        pattern: monetaryAmountPattern,
+        description: "This is the amount of money you intend to deposit. Please note that although some people do spend the tax refund they get on money they deposit into an RRSP, for the purpose of the comparison, we assume that you deposit the refund as well."
       },
       retirementTaxRate: {
-        label: "Your Retirement Tax Rate",
+        label: "Marginal Tax Rate at Withdrawal",
         placeholder: "5%",
-        pattern: percentagePattern
+        pattern: percentagePattern,
+        description: "This is your estimation of the highest income tax bracket that will apply to you at the time you intend to withdraw your investment. Typically, this will be in your retirement."
       },
       investmentGrowthRate: {
-        label: "Your Investment Growth Rate",
+        label: "Annual Investment Growth Rate",
         placeholder: "2%",
-        pattern: percentagePattern
+        pattern: percentagePattern,
+        description: "The annual rate at which your money grows. Be sure to input the nominal rate (i.e., don't adjust for inflation). We'll take care of that for you."
       },
       inflationRate: {
         label: "The Inflation Rate",
         placeholder: "5%",
-        pattern: percentagePattern
+        pattern: percentagePattern,
+        defaultValue: 2,
+        description: "Your estimation of the inflation rate for the period of your investment. If you'd like, you can just use the default value of 2%, which is what the Canadian government strives to maintain."
       },
       yearsInvested: {
-        label: "Years You Plan To Invest",
+        label: "Years Invested",
         placeholder: "30",
-        pattern: "\\d+"
+        pattern: "\\d+",
+        description: "The period of the investment, in years."
       }
     }
 
@@ -132,7 +149,7 @@
     createFormInputFields()
 
     function createFormInputFields(){
-      const fieldsPerCol = 3;
+      const fieldsPerCol = 2;
       var formContainer = document.getElementById("calculatorForm")
       const fieldNames = Object.keys(formFields)
       const numFields = fieldNames.length
@@ -162,8 +179,13 @@
       const fieldData = formFields[field]
       const label = fieldData.label
       const placeholder= fieldData.placeholder
+      const description= fieldData.description
+      const describedBy = field+"Help"
+      const defaultValue=fieldData.defaultValue || ""
       formGroup.insertAdjacentHTML("beforeEnd", '<label for="'+field+'">'+label+'</label>');
-      formGroup.insertAdjacentHTML("beforeEnd", '<input type="text" placeholder="'+placeholder+'" class="form-control input-sm" id="'+field+'">');
+      formGroup.insertAdjacentHTML("beforeEnd", '<input value="'+defaultValue+'" type="text" placeholder="'+placeholder+'" class="form-control input-sm" id="'+field+'" aria-describedby="'+describedBy+'">');
+      formGroup.insertAdjacentHTML("beforeEnd",'<small id="'+describedBy+'" class="form-text text-muted">'+description+'</small>')
+
     }
 
 
