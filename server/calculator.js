@@ -21,7 +21,7 @@ function compute(input, computeAfterTax, computeAfterTaxFutureValue){
   //it should perform the same modifications to the inputs as do our contracts
   const rateOfReturn = (1 + investmentGrowthRate) / (1 + inflationRate) -1; //beware of math errors. may want to use some rounding logic?
   //check on therounding rules
-  const futureValue = afterTax * Math.pow((1 + rateOfReturn/100), rateOfReturn*yearsInvested);
+  const futureValue = afterTax * Math.pow((1 + rateOfReturn/100), yearsInvested);
   const afterTaxFutureValue = computeAfterTaxFutureValue(futureValue,input.retirementTaxRate)
 
   return {
