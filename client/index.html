@@ -99,7 +99,7 @@
       return matches ? matches[0] : ""
     }
 
-    //add describes that include expected value
+
     const formFields = {
       currentTaxRate: {
         label: "Current Marginal Tax Rate",
@@ -189,7 +189,7 @@
     }
 
 
-    var formInput = null //lazily initialize on first call to calculate.
+    let formInput = null //lazily initialize on first call to calculate.
     //elements aren't mounted to DOM when the script initially executes.
 
     function cacheFormElements(){
@@ -223,7 +223,7 @@
             case 400:
               const errors = JSON.parse(request.responseText)
               errors.forEach(function (err) {
-                injectErrorMessageIntoRelevantField(err)
+                injectErrorMessageIntoDescription(err)
               })
               break;
           }
@@ -242,7 +242,6 @@
         const RRSPResults = document.getElementById("RRSP")
         displayReturnsForTaxAccount(TSFAResults, data.TSFA)
         displayReturnsForTaxAccount(RRSPResults, data.RRSP)
-
         const TSFAAfterTaxFutureValue = data.TSFA.afterTaxFutureValue
         const RRSPAfterTaxFutureValue = data.RRSP.afterTaxFutureValue
         const comparison = TSFAAfterTaxFutureValue - RRSPAfterTaxFutureValue
@@ -260,7 +259,6 @@
 
     function summarize(betterAccount){
       const summary = document.getElementById("resultsSummary")
-      debugger
       summary.innerText = resultsSummaries[betterAccount]
     }
 
@@ -275,14 +273,14 @@
         }
       }
 
-
-
-      function injectErrorMessageIntoRelevantField(error){
+      function injectErrorMessageIntoDescription(error){
         if(!formInput) cacheFormElements()
-        element = formInput[error.field]
-        element.value = error.message
+        fieldHelp = document.getElementById(error.field+'Help')
+        fieldHelp.innerText = error.message
 
       }
+
+
 
 
 
