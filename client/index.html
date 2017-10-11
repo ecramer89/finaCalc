@@ -19,6 +19,13 @@
     </body>
 <script>
 
+    //todo: onchange,
+    //cache the values here (i.e., as state)
+    //and process-update the values in the components.
+    //see if bootstrap has a default "alert" that can be used
+    //make it so the button is not enabled unless all of the fields have been given definite values
+    //figure out why the missing values arent being treated as null
+
     const calculateURL = "http://localhost:3000/calculate" //note: be sure that you don't change the server code so that it possible pings a different port than 3000
     const digitPattern = "\\d+"
     const monetaryAmountPattern = "\\d+(\.\\d{1,2})?"
@@ -39,7 +46,7 @@
       inflationRate: {label: "The Inflation Rate", placeholder: "5%", pattern: digitPattern},
       yearsInvested: {label: "Years You Plan To Invest", placeholder: "30", pattern: digitPattern}
     }
-    
+
     createFormInputFields()
 
     function createFormInputFields(){
@@ -86,8 +93,16 @@
       request.setRequestHeader("Content-Type", "application/json")
 
       request.onreadystatechange = function () {
-        if(request.readyState === XMLHttpRequest.DONE && request.status === 200) {
-          alert("done: "+request.responseText); //todo need to populate another element with the result of the request
+        if(request.readyState === XMLHttpRequest.DONE) {
+          switch(request.status){
+            case 200:
+              alert("done: "+request.responseText); //todo need to populate another element with the result of the request
+              break;
+            case 400:
+              alert("error: "+request.responseText) //todo populate the fields with result.
+              break;
+          }
+
         }
       }
 

@@ -7,8 +7,8 @@ function calculate(req, res){
       RRSP: computeRRSP(input)
     }
     res.send(result)
-  }catch(validationError){
-      res.status().send(validationError)
+  }catch(error){
+      res.status(400).send(error.message)
   }
 }
 
@@ -18,9 +18,9 @@ function compute(input, computeAfterTax, computeAfterTaxFutureValue){
   const yearsInvested = input.yearsInvested
 
   const afterTax = computeAfterTax(input.amountInvested, input.currentTaxRate) //todo define a "to decimal" operation in the contract class.
-  //it should perform the same modifications to the inputs as do our contracts
+
   const rateOfReturn = (1 + investmentGrowthRate) / (1 + inflationRate) -1; //beware of math errors. may want to use some rounding logic?
-  //check on therounding rules
+
   const futureValue = afterTax * Math.pow((1 + rateOfReturn/100), yearsInvested);
   const afterTaxFutureValue = computeAfterTaxFutureValue(futureValue,input.retirementTaxRate)
 
@@ -49,22 +49,54 @@ function computeRRSP(input){
     })
 }
 
-function validate(){
+function validate(input){
   //check iffields null; if fields are numeric values, if fields are decimals within expected rate, etc.
-  var validationErrors = []
-  //validate each field
+  const validationErrors = []
+  for(const field in input){
+    if(!field){
+      validationErrors.push({field: field, message: field+" is required."})
+    }
+    else {
+      const value = input[field]
+      switch(field){
+        case "currentTaxRate":
+        case "retirementTaxRate":
+        case "inflationRate":
+        case "investmentGrowthRate":
+          if(value < 0 || value > 100) {
+            validationErrors.push({field: field, message: field+" must be a valid percentage (between 0 and 100)"})
+          }
+          break;
+        case "amountInvested":
+        case "yearsInvested":
+          if(value < 0){
+            validationErrors.push({field: field, message: field+" cannot be negative."})
+          }
+      }
+    }
+  }
+
+  if(validationErrors.length > 0) throw new Error(JSON.stringify(validationErrors))
+
 }
 
 
-//todo this class should convert percentage inputs to decimal. NO ROUNDING until end
+function toNumber(value){
+  const asNumber = Number.parseFloat(value)
+  return Number.isFinite(asNumber) ? asNumber : null
+
+}
+
+
 class CalculatorInput{
   constructor(data){
-    this.currentTaxRate = data.currentTaxRate || null
-    this.amountInvested = data.amountInvested || null
-    this.retirementTaxRate = data.retirementTaxRate || null
-    this.investmentGrowthRate = data.investmentGrowthRate || null
-    this.inflationRate = data.inflationRate || null
-    this.yearsInvested = data.yearsInvested || null
+    this.currentTaxRate = toNumber(data.currentTaxRate);
+    this.amountInvested = toNumber(data.amountInvested)
+    this.retirementTaxRate = toNumber(data.retirementTaxRate);
+    this.investmentGrowthRate = toNumber(data.investmentGrowthRate);
+    this.inflationRate = toNumber(data.inflationRate);
+    this.yearsInvested = toNumber(data.yearsInvested)
+
   }
 }
 
@@ -86,6 +118,7 @@ module.exports = calculate;
   -clarify whether user is expedcted to input all of the form values?
   -cannot open the hyperlinked pageto "today's dollars"; not sure what this implies
   -do we assume that users will be withdrawing when they retire? (vs the time years invested+today)
+  -should we compute the inflation rate ourselves? (i.e. the client an estimate the current time or could attempt to retrieve current inflation rate from an external service)
 
 
 
