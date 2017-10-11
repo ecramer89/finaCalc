@@ -75,3 +75,20 @@ function roundTo(value, places){
 
 
 module.exports = calculate;
+
+
+
+/*
+  QUESTIONS TO ASK:
+  -clarification on the "after tax" thing
+  -clarify that the interest is compounded yearly
+  -clarify about rounding
+  -clarify whether user is expedcted to input all of the form values?
+  -cannot open the hyperlinked pageto "today's dollars"; not sure what this implies
+  -do we assume that users will be withdrawing when they retire? (vs the time years invested+today)
+
+
+
+
+
+ */

@@ -13,26 +13,6 @@
         <div>
             <form onsubmit="calculate()">
                 <div class="form-group" id="calculatorForm">
-
-                    <label for="currentTaxRate" color="red">Current Tax Rate</label>
-                    <input type="text" class="form-control" id="currentTaxRate">
-
-                    <label for="amountInvested">Amount Invested</label>
-                    <input type="text" class="form-control" id="amountInvested">
-
-                    <label for="retirementTaxRate">Tax Rate in Retirement</label>
-                    <input type="text" class="form-control" id="retirementTaxRate">
-
-                    <label for="investmentGrowthRate">Investment Growth Rate</label>
-                    <input type="text" class="form-control" id="investmentGrowthRate">
-
-                    <label for="inflationRate">Inflation Rate</label>
-                    <input type="text" class="form-control" id="inflationRate">
-
-                    <label for="yearsInvested">Years Invested</label>
-                    <input type="text" class="form-control" id="yearsInvested">
-
-                    <button type="submit" class="btn btn-default">Submit</button>
                 </div>
             </form>
         </div>
@@ -42,40 +22,32 @@
     const calculateURL = "http://localhost:3000/calculate" //note: be sure that you don't change the server code so that it possible pings a different port than 3000
 
     const formFields = [
-      "currentTaxRate",
-      "amountInvested",
-      "retirementTaxRate",
-      "investmentGrowthRate",
-      "inflationRate",
-      "yearsInvested"
+      {field: "currentTaxRate", label: "Your Current Marginal Tax Rate"},
+      {field: "amountInvested",label: "The Amount You Intend To Invest"},
+      {field: "retirementTaxRate", label: "Your Retirement Tax Rate"},
+      {field: "investmentGrowthRate", label: "Your Investment Growth Rate"},
+      {field: "inflationRate", label: "The Inflation Rate"},
+      {field: "yearsInvested", label: "Years You Plan To Invest"},
     ]
-    //createFormInputFields()
 
-    /*function createFormInputFields(){
+
+    createFormInputFields()
+
+    function createFormInputFields(){
       var formGroup = document.getElementById("calculatorForm")
-      formFields.map(function(formField){
-            const field = formField.field
-            const display = formField.display
-            var label = document.createElement("label")
-            label.className+="form-control"
-            label.setAttribute("for", field)
-            label.value = display;
-            var input = document.createElement("input")
-            input.className+="form-control"
-            input.id=field
-            input.setAttribute("type", "text")
-            formGroup.appendChild(label);
-            formGroup.appendChild(input)
+      Object.keys(formFields).map(function(field){
+            formGroup.insertAdjacentHTML("beforeEnd", '<label for="'+field+'">'+formFields[field].label+'</label>');
+            formGroup.insertAdjacentHTML("beforeEnd", '<input type="text" class="form-control" id="'+field+'">');
       })
-    }*/
+      formGroup.insertAdjacentHTML("beforeEnd",'<button type="submit" class="btn btn-default">Submit</button>')
+    }
 
 
     var formInput = null //lazily initialize on first call to calculate.
     //elements aren't mounted to DOM when the script initially executes.
-
-
+    
     function cacheFormElements(){
-      formInput = formFields.reduce(function(acc, field){
+      formInput = Object.keys(formFields).reduce(function(acc, field){
         acc[field] = document.getElementById(field)
         return acc
       }, {})
