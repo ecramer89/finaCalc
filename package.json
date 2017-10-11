@@ -15,6 +15,7 @@
   "author": "Emily Cramer",
   "license": "ISC",
   "devDependencies": {
+    "mocha": "^4.0.1",
     "nodemon": "^1.12.1"
   },
   "dependencies": {
