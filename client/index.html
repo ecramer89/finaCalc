@@ -108,7 +108,7 @@
         description: "The highest income tax rate that applies to you, based on your current income. Enter as a percentage."
       },
       amountInvested: {
-        label: "Deposit",
+        label: "Deposit Amount",
         placeholder: "1000.00$",
         pattern: monetaryAmountPattern,
         description: "This is the amount of money you intend to deposit. Note that although some people spend the tax refund they get on money they deposit into an RRSP, for the purpose of the comparison, we assume that you deposit the refund as well."
@@ -223,6 +223,7 @@
             case 400:
               const errors = JSON.parse(request.responseText)
               errors.forEach(function (err) {
+                console.log(JSON.Stringify(err))
                 injectErrorMessageIntoDescription(err)
               })
               break;
@@ -275,8 +276,10 @@
 
       function injectErrorMessageIntoDescription(error){
         if(!formInput) cacheFormElements()
-        fieldHelp = document.getElementById(error.field+'Help')
-        fieldHelp.innerText = error.message
+        const field = error.field
+        const fieldLabel = formFields[field].label
+        fieldHelp = document.getElementById(field+'Help')
+        fieldHelp.innerText = fieldLabel+' '+error.message
 
       }
 

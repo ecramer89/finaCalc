@@ -56,7 +56,7 @@ function validate(input){
   for(const field in input){
     const value = input[field]
     if(!value){
-      validationErrors.push({field: field, message: field+" is required."})
+      validationErrors.push({field: field, message: "is required."})
     }
     else {
       switch(field){
@@ -65,17 +65,19 @@ function validate(input){
         case "inflationRate":
         case "investmentGrowthRate":
           if(value < 0 || value > 100) {
-            validationErrors.push({field: field, message: field+" must be a valid percentage (between 0 and 100)"})
+            validationErrors.push({field: field, message: "must be a valid percentage (between 0 and 100)"})
           }
           break;
         case "amountInvested":
         case "yearsInvested":
           if(value < 0){
-            validationErrors.push({field: field, message: field+" cannot be negative."})
+            validationErrors.push({field: field, message: "cannot be negative."})
           }
       }
     }
   }
+
+
 
   if(validationErrors.length > 0) throw new Error(JSON.stringify(validationErrors))
 
