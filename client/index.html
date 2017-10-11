@@ -5,11 +5,11 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
     <style>
         body {
-            font-size: 10px;
+            font-size: 70%;
             font-family: Verdana;
         }
         #explanatoryText{
-            font-size: 8px;
+            font-size: 65%;
         }
         #resultPanel{
             visibility: hidden;
@@ -34,7 +34,7 @@
                     An <b>TSFA</b> is the opposite. You pay tax when you deposit, but you don't pay any taxes on the money you withdraw.
                     An <b>RRSP</b> is great if you're currently paying a high tax and you don't intend to withdraw until you're retired, when your income and taxes are less.
                     A <b>TSFA</b> is great if you're currently earning less than you expect to and you want to put some money away to save for a house or a car.
-                    Still feeling overwhelmed? Our calculator can help.
+                    <b><i>Still feeling overwhelmed? Our calculator can help</b></i>.
                     Fill out the form to the right and click 'submit' to see which account is better for you.
                 </div>
             </div>
@@ -91,16 +91,36 @@
 
     //add describes that include expected value
     const formFields = {
-      currentTaxRate: {label: "Your Current Marginal Tax Rate", placeholder: "15%", pattern: percentagePattern},
+      currentTaxRate: {
+        label: "Your Current Marginal Tax Rate",
+        placeholder: "15%",
+        pattern: percentagePattern
+      },
       amountInvested: {
         label: "The Amount You Intend To Invest",
         placeholder: "1000.00$",
         pattern: monetaryAmountPattern
       },
-      retirementTaxRate: {label: "Your Retirement Tax Rate", placeholder: "5%", pattern: percentagePattern},
-      investmentGrowthRate: {label: "Your Investment Growth Rate", placeholder: "2%", pattern: percentagePattern},
-      inflationRate: {label: "The Inflation Rate", placeholder: "5%", pattern: percentagePattern},
-      yearsInvested: {label: "Years You Plan To Invest", placeholder: "30", pattern: "\\d+"}
+      retirementTaxRate: {
+        label: "Your Retirement Tax Rate",
+        placeholder: "5%",
+        pattern: percentagePattern
+      },
+      investmentGrowthRate: {
+        label: "Your Investment Growth Rate",
+        placeholder: "2%",
+        pattern: percentagePattern
+      },
+      inflationRate: {
+        label: "The Inflation Rate",
+        placeholder: "5%",
+        pattern: percentagePattern
+      },
+      yearsInvested: {
+        label: "Years You Plan To Invest",
+        placeholder: "30",
+        pattern: "\\d+"
+      }
     }
 
     const resultsSummaries = {
