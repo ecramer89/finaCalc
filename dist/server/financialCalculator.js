@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.handler = handler;
+exports.calculate = calculate;
 exports.computeRealRateOfReturn = computeRealRateOfReturn;
 exports.computeFutureValue = computeFutureValue;
 exports.compute = compute;
@@ -22,17 +23,20 @@ var _util = require("./util");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function handler(req, res) {
-  var input = new _CalculatorInput2.default(req.body);
   try {
-    validate(input);
-    var result = {
-      TSFA: computeTSFA(input),
-      RRSP: computeRRSP(input)
-    };
+    var result = calculate(new _CalculatorInput2.default(req.body));
     res.send(result);
   } catch (error) {
     res.status(400).send(error.message);
   }
+}
+
+function calculate(calculatorInput) {
+  validate(calculatorInput);
+  return {
+    TSFA: computeTSFA(calculatorInput),
+    RRSP: computeRRSP(calculatorInput)
+  };
 }
 
 function computeRealRateOfReturn(nominalRateOfReturn, inflationRate) {

@@ -28,7 +28,7 @@ export function computeFutureValue(afterTax,rateOfReturn,yearsInvested){
   return afterTax * Math.pow((1 + rateOfReturn), yearsInvested);
 }
 
-export function compute(input, computeAfterTax, computeAmountTaxedOnWithdrawal){
+export function composeComputations(input, computeAfterTax, computeAmountTaxedOnWithdrawal){
   const nominalRateOfReturn = percentageToDecimal(input.investmentGrowthRate)
   const inflationRate = percentageToDecimal(input.inflationRate)
   const yearsInvested = input.yearsInvested
@@ -60,11 +60,11 @@ export function computeTaxDeducted(amount, taxRate){
 }
 
 export function computeTSFA(input){
-  return compute(input, deductTaxFromAmount, ()=>0)
+  return composeComputations(input, deductTaxFromAmount, ()=>0)
 }
 
 export function computeRRSP(input){
-  return compute(input, (amountInvested)=>amountInvested, computeTaxDeducted)
+  return composeComputations(input, (amountInvested)=>amountInvested, computeTaxDeducted)
 }
 
 export function validate(input){

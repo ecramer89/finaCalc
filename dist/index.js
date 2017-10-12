@@ -19,8 +19,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var app = (0, _express2.default)();
 
 app.use(_bodyParser2.default.json());
-//app.use(bodyParser.urlencoded({ extended: true })); //extended is only required if we anticipate having deeply nested objects.
-//you should delete it if that won't be the case
 
 app.get("/", function (req, res) {
   res.sendFile(_path2.default.join(__dirname + '/client/index.html'));
