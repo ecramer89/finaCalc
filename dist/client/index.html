@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    <style>
+        body {
+            font-size: 70%;
+            font-family: Verdana;
+        }
+        #explanatoryText{
+            font-size: 70%;
+        }
+        #resultPanel{
+            visibility: hidden;
+            display: none;
+        }
+        .resultLabel{
+            font-weight: bold;
+        }
+    </style>
+    <title>TaxApple</title>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+                <h4>TSFA or RRSP?</h4>
+                <div id="explanatoryText">
+                    TSFAs and RRSPs are alternative tax free investment savings account.
+                    Both can help you save for retirement, so which should you choose?
+                    An <b>RRSP</b> allows you to defer paying tax on your investment.
+                    You don't pay any tax on the money you deposit, but you have to pay taxes on the money you withdraw.
+                    An <b>TSFA</b> is the opposite. You pay tax when you deposit, but you don't pay any taxes on the money you withdraw.
+                    <p>
+                    <b><i>To summarize:</i></b>
+                    An <b>RRSP</b> is great if you're currently paying a high tax and you don't intend to withdraw until you're retired, when your income and taxes are less.
+                    A <b>TSFA</b> is great if you're currently earning less than you expect to and you want to put some money away to save for a house or a car.
+                    <b><i>Still feeling overwhelmed? Our calculator can help</b></i>.
+                    Fill out the form to the right and click 'submit' to see which account is better for you.
+                    </p>
+            </div>
+        </div>
+        <div class="row">
+        <div class="container" id="formPanel">
+            <form onsubmit="calculate()">
+                <div class="container">
+                    <div class="row" id="calculatorForm"></div>
+                </div>
+            </form>
+        </div>
+        </div>
+        <div class="row" id="resultPanel">
+            <div class="col">
+            <div class="container">
+                <div class="row" id="resultLabels">
+                    <div class="col resultLabel">Account Type</div>
+                    <div class="col resultLabel">After-Tax</div>
+                    <div class="col resultLabel">Future-Value</div>
+                    <div class="col resultLabel">Amount Taxed</div>
+                    <div class="col resultLabel">Withdrawal After-Tax</div>
+                </div>
+                <div class="row" id="TSFA">
+                    <div class="col resultLabel">TSFA</div>
+                    <div class="col" id="TSFA-afterTax"></div>
+                    <div class="col" id="TSFA-futureValue"></div>
+                    <div class="col" id="TSFA-amountTaxedOnWithdrawal"></div>
+                    <div class="col" id="TSFA-afterTaxFutureValue"></div>
+                </div>
+                <div class="row" id="RRSP">
+                    <div class="col resultLabel">RRSP</div>
+                    <div class="col" id="RRSP-afterTax"></div>
+                    <div class="col" id="RRSP-futureValue"></div>
+                    <div class="col" id="RRSP-amountTaxedOnWithdrawal"></div>
+                    <div class="col" id="RRSP-afterTaxFutureValue"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+        <div class="row" id="resultsSummary">
+
+        </div>
+    </div>
+    </body>
+<script>
+
+
+    const calculateURL = "http://localhost:3000/calculate"
+
+    const parsePercentage = "1?\\d{0,2}(\\.\\d+)?" //used to parse the number from input provided to the server in the command. may extract empty.
+    const parseMonetaryAmount = "\\d*(\\.\\d{1,2})?"//used to parse the number from input provided to the server in the command. may extract empty.
+    const checkPercentageInput = "^(\\.\\d*%?|1?\\d{1,2}(\\.\\d+|\\.?)%?)";//used to validate user input character by character to ensure that the next character does not break the pattern.
+    const checkMonetaryInput = "^(\\.\\d{0,2}\\$?|\\d+(\\$|\\.\\d{1,2}\\$?|\\.?))";//used to validate user input character by character to ensure that the next character does not break the pattern
+    const integerChecker = "\\d+$"
+
+    function parseInputWithPattern(input, pattern){
+      const matches = input.match(pattern)
+      return matches ? matches[0] : ""
+    }
+
+
+    const formFields = {
+      currentTaxRate: {
+        label: "Current Marginal Tax Rate",
+        placeholder: "15%",
+        pattern: parsePercentage,
+        inputChecker: checkPercentageInput,
+        description: "The highest income tax rate that applies to you, based on your current income. Enter as a percentage."
+      },
+      amountInvested: {
+        label: "Deposit Amount",
+        placeholder: "1000.00$",
+        pattern: parseMonetaryAmount,
+        inputChecker: checkMonetaryInput,
+        description: "This is the amount of money you intend to deposit. Note that although some people spend the tax refund they get on money they deposit into an RRSP, for the purpose of the comparison, we assume that you deposit the refund as well."
+      },
+      retirementTaxRate: {
+        label: "Marginal Tax Rate at Withdrawal",
+        placeholder: "5%",
+        pattern: parsePercentage,
+        inputChecker: checkPercentageInput,
+        description: "The highest income tax bracket that will apply to you when you withdraw your investment. (This is typically when you're retired). Enter as a percentage."
+      },
+      investmentGrowthRate: {
+        label: "Annual Investment Growth Rate",
+        placeholder: "2%",
+        pattern: parsePercentage,
+        inputChecker: checkPercentageInput,
+        description: "The annual rate at which your money grows. Be sure to input the nominal rate (i.e., don't adjust for inflation). We'll take care of that for you. Enter as a percentage."
+      },
+      inflationRate: {
+        label: "The Inflation Rate",
+        placeholder: "5%",
+        pattern: parsePercentage,
+        inputChecker: checkPercentageInput,
+        defaultValue: "2%",
+        description: "Estimate the annual inflation rate over your investment period. If you'd like, you can use the default value (2%), which is what the Canadian government strives to maintain."
+      },
+      yearsInvested: {
+        label: "Years Invested",
+        placeholder: "30",
+        pattern: "\\d+",
+        inputChecker: integerChecker,
+        description: "The period of the investment, in years."
+      }
+    }
+
+    const resultsSummaries = {
+      either: "The two accounts break even. You may wish to double-check your estimates of your current and expected retirement income tax brackets.",
+      TSFA: "The TSFA would be a better choice for you. Be sure to re-calculate if you extend the investment period or adjust your estimated future tax bracket.",
+      RRSP: "The RRSP would be a better choice for you. Be sure to re-calculate if you anticipate having to withdraw some of your money earlier."
+    }
+
+    createFormInputFields()
+
+    function createFormInputFields(){
+      const fieldsPerCol = 2;
+      let formContainer = document.getElementById("calculatorForm")
+      const fieldNames = Object.keys(formFields)
+      const numFields = fieldNames.length
+      let formGroup = createFormGroup()
+      formContainer.appendChild(formGroup)
+      let currFormGroup = 0
+
+      for(let i = 0; i< numFields;i++){
+         const forFormGroup = Math.floor(i/fieldsPerCol)
+            if(forFormGroup != currFormGroup){
+              formGroup = createFormGroup()
+              formContainer.appendChild(formGroup)
+              currFormGroup = forFormGroup
+            }
+        createAndAddFormFieldToFormGroup(formGroup, fieldNames[i])
+      }
+      formContainer.insertAdjacentHTML("afterEnd",'<div class="row"><button type="submit" class="btn btn-primary btn-sm disabled" id="calculateButton">Calculate</button></div>')
+    }
+
+    function createFormGroup(){
+      let formGroup = document.createElement("div")
+      formGroup.className+="col form-group"
+      return formGroup
+    }
+
+    function createAndAddFormFieldToFormGroup(formGroup, field){
+      const fieldData = formFields[field]
+      const label = fieldData.label
+      const placeholder= fieldData.placeholder
+      const description= fieldData.description
+      const describedBy = field+"Help"
+      const defaultValue=fieldData.defaultValue || ""
+      formGroup.insertAdjacentHTML("beforeEnd", '<label for="'+field+'">'+label+'</label>');
+      formGroup.insertAdjacentHTML("beforeEnd", '<input value="'+defaultValue+'" type="text" placeholder="'+placeholder+'" class="input-sm" id="'+field+'" aria-describedby="'+describedBy+'" onkeyup="'+"checkAndSaveInputValue()"+'" onclick="'+"restoreFieldDescriptionToDefault()"+'">');
+      formGroup.insertAdjacentHTML("beforeEnd",'<small id="'+describedBy+'" class="form-text text-muted">'+description+'</small>')
+
+    }
+
+
+    let fieldInputs = null //lazily initialize on first call to calculate.
+    //elements aren't mounted to DOM when the script initially executes.
+    let fieldDescriptions=null
+    let calculateButton=null
+
+    function cacheFormElements(){
+      fieldInputs = {}
+      fieldDescriptions={}
+      for(const field of Object.keys(formFields)){
+        fieldInputs[field] = document.getElementById(field)
+        fieldDescriptions[field]=document.getElementById(field+"Help")
+      }
+
+    }
+
+    function calculate() {
+      if (!fieldInputs) cacheFormElements();
+      let params = Object.keys(fieldInputs).reduce(function (acc, fieldName) {
+        acc[fieldName] = parseInputWithPattern(fieldInputs[fieldName].value, formFields[fieldName].pattern)
+        return acc
+      }, {});
+
+      let request = new XMLHttpRequest()
+
+      request.open("POST", calculateURL, true)
+      request.setRequestHeader("Accept", "application/json")
+      request.setRequestHeader("Content-Type", "application/json")
+
+      request.onreadystatechange = function () {
+        if (request.readyState === XMLHttpRequest.DONE) {
+          switch (request.status) {
+            case 200:
+              const data = JSON.parse(request.responseText)
+              displayInResultsPanels(data)
+              break;
+            case 400:
+              const errors = JSON.parse(request.responseText)
+              errors.forEach(function (err) {
+                injectErrorMessageIntoDescription(err)
+              })
+              break;
+          }
+        }
+      }
+      request.send(JSON.stringify(params))
+      event.preventDefault()
+    }
+
+      function displayInResultsPanels(data){
+        const resultsPanel = document.getElementById("resultPanel")
+        resultsPanel.style.visibility = "visible"
+        resultsPanel.style.display = "block"
+        const {TSFA, RRSP} = data
+        const TSFAResults = document.getElementById("TSFA")
+        const RRSPResults = document.getElementById("RRSP")
+        displayReturnsForTaxAccount(TSFAResults, TSFA)
+        displayReturnsForTaxAccount(RRSPResults, RRSP)
+        const comparison = TSFA.afterTaxFutureValue - RRSP.afterTaxFutureValue
+        const betterChoice = comparison == 0 ? "either" : (comparison >  0 ?  "TSFA" : "RRSP")
+        highlightAfterTaxFutureCellFor(betterChoice)
+        summarize(betterChoice)
+      }
+
+      const cachedFormInputValues = {}
+
+      function checkAndSaveInputValue(){
+        if (!fieldInputs) cacheFormElements();
+        const {id : formField, value : updateValue}= event.target
+        const inputChecker = formFields[formField].inputChecker
+        const matches = updateValue.match(inputChecker)
+        if(matches){
+          cachedFormInputValues[formField] = matches[0]
+        }else if(updateValue.length == 0){
+          cachedFormInputValues[formField]="" //allow deletions of the last character
+        }
+        event.target.value = cachedFormInputValues[formField] || ""
+      }
+
+
+    function highlightAfterTaxFutureCellFor(betterAccount){
+      if(betterAccount == "either") return
+      const resultCell = document.getElementById(betterAccount+"-afterTaxFutureValue")
+      resultCell.style.backgroundColor="yellow"
+    }
+
+    function summarize(betterAccount){
+      const summary = document.getElementById("resultsSummary")
+      summary.innerText = resultsSummaries[betterAccount]
+    }
+
+      function displayReturnsForTaxAccount(accountResultsPanel, dataForPanel){
+        const accountType = accountResultsPanel.id
+        const resultsFieldNames=Object.keys(dataForPanel)
+        for(const fieldName of resultsFieldNames){
+          const id = accountType+"-"+fieldName
+          const resultCell = document.getElementById(id)
+          resultCell.innerHTML = dataForPanel[fieldName]
+        }
+      }
+
+      function injectErrorMessageIntoDescription(error){
+        if(!fieldInputs) cacheFormElements()
+        const field = error.field
+        const fieldLabel = formFields[field].label
+        const fieldDescription = fieldDescriptions[field]
+        fieldDescription.innerText = fieldLabel+' '+error.message
+        fieldDescription.style.backgroundColor="#F39FAD"
+        fieldDescription.style.fontWeight="bold"
+
+      }
+
+      function restoreFieldDescriptionToDefault(){
+        const field = event.target.id
+        const fieldDescription = fieldDescriptions[field]
+        fieldDescription.innerText = formFields[field].description
+        fieldDescription.style.backgroundColor="white"
+        fieldDescription.style.fontWeight="normal"
+      }
+
+</script>
+</html>
