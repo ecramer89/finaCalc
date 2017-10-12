@@ -91,9 +91,14 @@
 <script>
 
 
-    const calculateURL = "http://localhost:3000/calculate" //note: be sure that you don't change the server code so that it possible pings a different port than 3000
-    const percentagePattern = "\\d+(\.\\d+)?"
-    const monetaryAmountPattern = "\\d+(\.\\d{1,2})?"
+
+    const calculateURL = "http://localhost:3000/calculate"
+
+    const parsePercentage = "1?\\d{0,2}(\\.\\d+)?" //used to parse the number from input provided to the server in the command. may extract empty.
+    const parseMonetaryAmount = "\\d*(\\.\\d{1,2})?"//used to parse the number from input provided to the server in the command. may extract empty.
+    const checkPercentageInput = "(\\.\\d+%?|1?\\d{1,2}(\\.\\d+%?|\\.?))";//used to validate user input character by character to ensure that the next character does not break the pattern.
+    const checkMonetaryInput = "\\d+\\.?\\d{0,2}\\$?";//used to validate user input character by character to ensure that the next character does not break the pattern
+    const integerChecker = "\\d+$"
     function parseInputWithPattern(input, pattern){
       const matches = input.match(pattern)
       return matches ? matches[0] : ""
@@ -104,38 +109,44 @@
       currentTaxRate: {
         label: "Current Marginal Tax Rate",
         placeholder: "15%",
-        pattern: percentagePattern,
+        pattern: parsePercentage,
+        inputChecker: checkPercentageInput,
         description: "The highest income tax rate that applies to you, based on your current income. Enter as a percentage."
       },
       amountInvested: {
         label: "Deposit Amount",
         placeholder: "1000.00$",
-        pattern: monetaryAmountPattern,
+        pattern: parseMonetaryAmount,
+        pattern: checkMonetaryInput,
         description: "This is the amount of money you intend to deposit. Note that although some people spend the tax refund they get on money they deposit into an RRSP, for the purpose of the comparison, we assume that you deposit the refund as well."
       },
       retirementTaxRate: {
         label: "Marginal Tax Rate at Withdrawal",
         placeholder: "5%",
-        pattern: percentagePattern,
+        pattern: parsePercentage,
+        inputChecker: checkPercentageInput,
         description: "The highest income tax bracket that will apply to you when withdraw your investment. (This is typically when you're retired). Enter as a percentage."
       },
       investmentGrowthRate: {
         label: "Annual Investment Growth Rate",
         placeholder: "2%",
-        pattern: percentagePattern,
+        pattern: parsePercentage,
+        inputChecker: checkPercentageInput,
         description: "The annual rate at which your money grows. Be sure to input the nominal rate (i.e., don't adjust for inflation). We'll take care of that for you. Enter as a percentage."
       },
       inflationRate: {
         label: "The Inflation Rate",
         placeholder: "5%",
-        pattern: percentagePattern,
-        defaultValue: 2,
+        pattern: parsePercentage,
+        inputChecker: checkPercentageInput,
+        defaultValue: "2%",
         description: "Estimate the annual inflation rate over your investment period. If you'd like, you can use the default value (2%), which is what the Canadian government strives to maintain."
       },
       yearsInvested: {
         label: "Years Invested",
         placeholder: "30",
         pattern: "\\d+",
+        inputChecker: integerChecker,
         description: "The period of the investment, in years."
       }
     }
@@ -164,9 +175,9 @@
               formContainer.appendChild(formGroup)
               currFormGroup = forFormGroup
             }
-        addFormFieldLabelAndInputToFormGroup(formGroup, fieldNames[i])
+        createAndAddFormFieldToFormGroup(formGroup, fieldNames[i])
       }
-      formContainer.insertAdjacentHTML("afterEnd",'<div class="row"><button type="submit" class="btn btn-default">Submit</button></div>')
+      formContainer.insertAdjacentHTML("afterEnd",'<div class="row"><button type="submit" class="btn btn-primary btn-md disabled" id="calculateButton">Calculate</button></div>')
     }
 
     function createFormGroup(){
@@ -175,7 +186,7 @@
       return formGroup
     }
 
-    function addFormFieldLabelAndInputToFormGroup(formGroup, field){
+    function createAndAddFormFieldToFormGroup(formGroup, field){
       const fieldData = formFields[field]
       const label = fieldData.label
       const placeholder= fieldData.placeholder
@@ -183,7 +194,7 @@
       const describedBy = field+"Help"
       const defaultValue=fieldData.defaultValue || ""
       formGroup.insertAdjacentHTML("beforeEnd", '<label for="'+field+'">'+label+'</label>');
-      formGroup.insertAdjacentHTML("beforeEnd", '<input value="'+defaultValue+'" type="text" placeholder="'+placeholder+'" class="form-control input-sm" id="'+field+'" aria-describedby="'+describedBy+'">');
+      formGroup.insertAdjacentHTML("beforeEnd", '<input value="'+defaultValue+'" type="text" placeholder="'+placeholder+'" class="form-control input-sm" id="'+field+'" aria-describedby="'+describedBy+'" onkeyup="'+"checkAndSaveInputValue()"+'">');
       formGroup.insertAdjacentHTML("beforeEnd",'<small id="'+describedBy+'" class="form-text text-muted">'+description+'</small>')
 
     }
@@ -223,7 +234,6 @@
             case 400:
               const errors = JSON.parse(request.responseText)
               errors.forEach(function (err) {
-                console.log(JSON.Stringify(err))
                 injectErrorMessageIntoDescription(err)
               })
               break;
@@ -249,6 +259,29 @@
         const betterChoice = comparison == 0 ? "either" : (comparison >  0 ?  "TSFA" : "RRSP")
         highlightAfterTaxFutureCellFor(betterChoice)
         summarize(betterChoice)
+      }
+
+      const cachedFormInputValues = {}
+      function allFieldsHaveValue(){
+        return Object.keys(cachedFormInputValues).reduce((acc, fieldName)=>acc&&cachedFormInputValues[fieldName], true)
+      }
+
+      function checkAndSaveInputValue(){
+        const formField = event.target.id
+        const updateValue = event.target.value
+        const inputChecker = formFields[formField].inputChecker
+        const matches = updateValue.match(inputChecker)
+        if(matches){
+          cachedFormInputValues[formField] = matches[0]
+        }else if(updateValue.length == 0){
+          cachedFormInputValues[formField]="" //allow deletions of the last character
+        }
+        event.target.value = cachedFormInputValues[formField] || ""
+        const submitButton = document.getElementById("calculateButton")
+        if(allFieldsHaveValue()){
+          submitButton.className.replace("disabled", "active")
+        } else submitButton.className.replace("active", "disabled")
+
       }
 
 
@@ -282,10 +315,6 @@
         fieldHelp.innerText = fieldLabel+' '+error.message
 
       }
-
-
-
-
 
 </script>
 </html>
