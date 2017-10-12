@@ -27,7 +27,7 @@ app.get("/", function (req, res) {
 });
 
 app.post("/calculate", function (req, res) {
-  (0, _financialCalculator.calculate)(req, res);
+  (0, _financialCalculator.handler)(req, res);
 });
 
 app.listen(3000, function () {

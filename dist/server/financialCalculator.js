@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.calculate = calculate;
+exports.handler = handler;
 exports.computeRealRateOfReturn = computeRealRateOfReturn;
 exports.computeFutureValue = computeFutureValue;
 exports.compute = compute;
@@ -21,7 +21,7 @@ var _util = require("./util");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function calculate(req, res) {
+function handler(req, res) {
   var input = new _CalculatorInput2.default(req.body);
   try {
     validate(input);

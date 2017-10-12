@@ -1,7 +1,7 @@
 import CalculatorInput from "./contracts/CalculatorInput"
 import {roundTo,percentageToDecimal} from "./util"
 
-export function calculate(req, res){
+export function handler(req, res){
     const input = new CalculatorInput(req.body)
   try {
     validate(input)
@@ -14,6 +14,9 @@ export function calculate(req, res){
       res.status(400).send(error.message)
   }
 }
+
+
+
 
 export function computeRealRateOfReturn(nominalRateOfReturn,inflationRate){
   return (1 + nominalRateOfReturn) / (1 + inflationRate) -1;
