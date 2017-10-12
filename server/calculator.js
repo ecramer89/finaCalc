@@ -55,7 +55,7 @@ function validate(input){
   const validationErrors = []
   for(const field in input){
     const value = input[field]
-    if(!value){
+    if(value === null){
       validationErrors.push({field: field, message: "is required."})
     }
     else {
