@@ -4,7 +4,7 @@
   "description": "Simple browser based calculator to help users decide whether to invest in a TSFA or an RRSP.",
   "main": "index.js",
   "scripts": {
-    "test": "test",
+    "test": "mocha --compilers js:babel-register --require babel-polyfill",
     "build": "rimraf dist/ && babel ./ --out-dir dist/ --ignore ./node_modules,./.babelrc,./package.json,./npm-debug.log --copy-files",
     "start": "npm run build && node dist/index.js"
   },
@@ -23,6 +23,8 @@
     "rimraf": "^2.6.2"
   },
   "dependencies": {
+    "babel-polyfill": "^6.26.0",
+    "babel-register": "^6.26.0",
     "body-parser": "^1.18.2"
   }
 }
