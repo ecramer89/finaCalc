@@ -1,24 +1,33 @@
 'use strict';
 
-var express = require('express');
-var path = require('path');
-var bodyParser = require('body-parser');
+var _express = require('express');
 
-var _require = require('./server/financialCalculator'),
-    calculate = _require.calculate;
+var _express2 = _interopRequireDefault(_express);
 
-var app = express();
+var _path = require('path');
 
-app.use(bodyParser.json());
+var _path2 = _interopRequireDefault(_path);
+
+var _bodyParser = require('body-parser');
+
+var _bodyParser2 = _interopRequireDefault(_bodyParser);
+
+var _financialCalculator = require('./server/financialCalculator');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var app = (0, _express2.default)();
+
+app.use(_bodyParser2.default.json());
 //app.use(bodyParser.urlencoded({ extended: true })); //extended is only required if we anticipate having deeply nested objects.
 //you should delete it if that won't be the case
 
 app.get("/", function (req, res) {
-  res.sendFile(path.join(__dirname + '/client/index.html'));
+  res.sendFile(_path2.default.join(__dirname + '/client/index.html'));
 });
 
 app.post("/calculate", function (req, res) {
-  calculate(req, res);
+  (0, _financialCalculator.calculate)(req, res);
 });
 
 app.listen(3000, function () {

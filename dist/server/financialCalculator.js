@@ -1,13 +1,28 @@
 "use strict";
 
-var CalculatorInput = require("./contracts/CalculatorInput");
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.calculate = calculate;
+exports.computeRealRateOfReturn = computeRealRateOfReturn;
+exports.computeFutureValue = computeFutureValue;
+exports.compute = compute;
+exports.deductTaxFromAmount = deductTaxFromAmount;
+exports.computeTaxDeducted = computeTaxDeducted;
+exports.computeTSFA = computeTSFA;
+exports.computeRRSP = computeRRSP;
+exports.validate = validate;
 
-var _require = require("./util"),
-    roundTo = _require.roundTo,
-    percentageToDecimal = _require.percentageToDecimal;
+var _CalculatorInput = require("./contracts/CalculatorInput");
+
+var _CalculatorInput2 = _interopRequireDefault(_CalculatorInput);
+
+var _util = require("./util");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function calculate(req, res) {
-  var input = new CalculatorInput(req.body);
+  var input = new _CalculatorInput2.default(req.body);
   try {
     validate(input);
     var result = {
@@ -29,25 +44,25 @@ function computeFutureValue(afterTax, rateOfReturn, yearsInvested) {
 }
 
 function compute(input, computeAfterTax, computeAmountTaxedOnWithdrawal) {
-  var nominalRateOfReturn = percentageToDecimal(input.investmentGrowthRate);
-  var inflationRate = percentageToDecimal(input.inflationRate);
+  var nominalRateOfReturn = (0, _util.percentageToDecimal)(input.investmentGrowthRate);
+  var inflationRate = (0, _util.percentageToDecimal)(input.inflationRate);
   var yearsInvested = input.yearsInvested;
 
-  var afterTax = computeAfterTax(input.amountInvested, percentageToDecimal(input.currentTaxRate));
+  var afterTax = computeAfterTax(input.amountInvested, (0, _util.percentageToDecimal)(input.currentTaxRate));
 
   var rateOfReturn = computeRealRateOfReturn(nominalRateOfReturn, inflationRate);
 
   var futureValue = computeFutureValue(afterTax, rateOfReturn, yearsInvested);
 
-  var amountTaxedOnWithdrawal = computeAmountTaxedOnWithdrawal(futureValue, percentageToDecimal(input.retirementTaxRate));
+  var amountTaxedOnWithdrawal = computeAmountTaxedOnWithdrawal(futureValue, (0, _util.percentageToDecimal)(input.retirementTaxRate));
 
   var afterTaxFutureValue = futureValue - amountTaxedOnWithdrawal;
 
   return {
-    afterTax: roundTo(afterTax, 2),
-    futureValue: roundTo(futureValue, 2),
-    amountTaxedOnWithdrawal: roundTo(amountTaxedOnWithdrawal, 2),
-    afterTaxFutureValue: roundTo(afterTaxFutureValue, 2)
+    afterTax: (0, _util.roundTo)(afterTax, 2),
+    futureValue: (0, _util.roundTo)(futureValue, 2),
+    amountTaxedOnWithdrawal: (0, _util.roundTo)(amountTaxedOnWithdrawal, 2),
+    afterTaxFutureValue: (0, _util.roundTo)(afterTaxFutureValue, 2)
   };
 }
 
@@ -99,11 +114,3 @@ function validate(input) {
 
   if (validationErrors.length > 0) throw new Error(JSON.stringify(validationErrors));
 }
-
-module.exports = {
-  calculate: calculate,
-  //these are exported for testing purposes; not because they should be generally shared.
-  validate: validate,
-  computeRRSP: computeRRSP,
-  computeTSFA: computeTSFA
-};

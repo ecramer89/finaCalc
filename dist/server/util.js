@@ -1,5 +1,11 @@
 "use strict";
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.toNumber = toNumber;
+exports.roundTo = roundTo;
+exports.percentageToDecimal = percentageToDecimal;
 function toNumber(value) {
   var asNumber = Number.parseFloat(value);
   return Number.isFinite(asNumber) ? asNumber : null;
@@ -13,9 +19,3 @@ function roundTo(value, places) {
 function percentageToDecimal(percentage) {
   return percentage / 100;
 }
-
-module.exports = {
-  toNumber: toNumber,
-  roundTo: roundTo,
-  percentageToDecimal: percentageToDecimal
-};

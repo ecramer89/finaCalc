@@ -1,7 +1,7 @@
-const CalculatorInput = require("./contracts/CalculatorInput")
-const {roundTo,percentageToDecimal} = require("./util")
+import CalculatorInput from "./contracts/CalculatorInput"
+import {roundTo,percentageToDecimal} from "./util"
 
-function calculate(req, res){
+export function calculate(req, res){
     const input = new CalculatorInput(req.body)
   try {
     validate(input)
@@ -15,16 +15,16 @@ function calculate(req, res){
   }
 }
 
-function computeRealRateOfReturn(nominalRateOfReturn,inflationRate){
+export function computeRealRateOfReturn(nominalRateOfReturn,inflationRate){
   return (1 + nominalRateOfReturn) / (1 + inflationRate) -1;
 }
 
 
-function computeFutureValue(afterTax,rateOfReturn,yearsInvested){
+export function computeFutureValue(afterTax,rateOfReturn,yearsInvested){
   return afterTax * Math.pow((1 + rateOfReturn), yearsInvested);
 }
 
-function compute(input, computeAfterTax, computeAmountTaxedOnWithdrawal){
+export function compute(input, computeAfterTax, computeAmountTaxedOnWithdrawal){
   const nominalRateOfReturn = percentageToDecimal(input.investmentGrowthRate)
   const inflationRate = percentageToDecimal(input.inflationRate)
   const yearsInvested = input.yearsInvested
@@ -47,26 +47,23 @@ function compute(input, computeAfterTax, computeAmountTaxedOnWithdrawal){
   }
 }
 
-function deductTaxFromAmount(amount, taxRate){
+export function deductTaxFromAmount(amount, taxRate){
   return amount * (1 - taxRate)
 }
 
-function computeTaxDeducted(amount, taxRate){
+export function computeTaxDeducted(amount, taxRate){
   return amount * taxRate
 }
 
-function computeTSFA(input){
-  return compute(input, deductTaxFromAmount, function(){return 0})
+export function computeTSFA(input){
+  return compute(input, deductTaxFromAmount, ()=>0)
 }
 
-function computeRRSP(input){
-  return compute(input, function(amountInvested){
-      return amountInvested
-    },
-    computeTaxDeducted)
+export function computeRRSP(input){
+  return compute(input, (amountInvested)=>amountInvested, computeTaxDeducted)
 }
 
-function validate(input){
+export function validate(input){
   const validationErrors = []
   for(const field in input){
     const value = input[field]
@@ -97,13 +94,6 @@ function validate(input){
 }
 
 
-module.exports= {
-  calculate: calculate,
-  //these are exported for testing purposes; not because they should be generally shared.
-  validate: validate,
-  computeRRSP: computeRRSP,
-  computeTSFA: computeTSFA
-}
 
 
 
