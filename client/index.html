@@ -176,7 +176,7 @@
             }
         createAndAddFormFieldToFormGroup(formGroup, fieldNames[i])
       }
-      formContainer.insertAdjacentHTML("afterEnd",'<div class="row"><button type="submit" class="btn btn-primary btn-md disabled" id="calculateButton">Calculate</button></div>')
+      formContainer.insertAdjacentHTML("afterEnd",'<div class="row"><button type="submit" class="btn btn-primary btn-sm disabled" id="calculateButton">Calculate</button></div>')
     }
 
     function createFormGroup(){
@@ -201,12 +201,20 @@
 
     let formInput = null //lazily initialize on first call to calculate.
     //elements aren't mounted to DOM when the script initially executes.
+    let formHelpers=null
+    let calculateButton=null
 
     function cacheFormElements(){
-      formInput = Object.keys(formFields).reduce(function(acc, field){
+      for(const field of Object.keys(formFields)){
+        formInput[field] = document.getElementById(field)
+        formHelpers[field]=document.getElementById(field+"Help")
+      }
+
+      calculateButton=document.getElementById("calculateButton")
+      /*formInput = Object.keys(formFields).reduce(function(acc, field){
         acc[field] = document.getElementById(field)
         return acc
-      }, {})
+      }, {})*/
     }
 
     function calculate() {
@@ -277,6 +285,7 @@
         }
         event.target.value = cachedFormInputValues[formField] || ""
         const submitButton = document.getElementById("calculateButton")
+
         if(allFieldsHaveValue()){
           submitButton.className.replace("disabled", "active")
         } else submitButton.className.replace("active", "disabled")
@@ -295,7 +304,6 @@
       summary.innerText = resultsSummaries[betterAccount]
     }
 
-
       function displayReturnsForTaxAccount(accountResultsPanel, dataForPanel){
         const accountType = accountResultsPanel.id
         const resultsFieldNames=Object.keys(dataForPanel)
@@ -312,6 +320,8 @@
         const fieldLabel = formFields[field].label
         fieldHelp = document.getElementById(field+'Help')
         fieldHelp.innerText = fieldLabel+' '+error.message
+        fieldHelp.style.backgroundColor="#F39FAD"
+        fieldHelp.style.fontWeight="bold"
 
       }
 
