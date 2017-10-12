@@ -1,5 +1,5 @@
 const CalculatorInput = require("./contracts/CalculatorInput")
-const {roundTo} = require("./util")
+const {roundTo,percentageToDecimal} = require("./util")
 
 function calculate(req, res){
     const input = new CalculatorInput(req.body)
@@ -16,17 +16,18 @@ function calculate(req, res){
 }
 
 function compute(input, computeAfterTax, computeAmountTaxedOnWithdrawal){
-  const investmentGrowthRate = input.investmentGrowthRate
-  const inflationRate = input.inflationRate
+  const nominalRateOfReturn = percentageToDecimal(input.investmentGrowthRate)
+  const inflationRate = percentageToDecimal(input.inflationRate)
   const yearsInvested = input.yearsInvested
 
-  const afterTax = computeAfterTax(input.amountInvested, input.currentTaxRate)
+  const afterTax = computeAfterTax(input.amountInvested, percentageToDecimal(input.currentTaxRate))
 
-  //should they be expressed as rates or as percentages when used to compute the result?
-  const rateOfReturn = (1 + investmentGrowthRate) / (1 + inflationRate) -1;
+  const rateOfReturn = (1 + nominalRateOfReturn) / (1 + inflationRate) -1;
 
-  const futureValue = afterTax * Math.pow((1 + rateOfReturn/100), yearsInvested);
-  const amountTaxedOnWithdrawal = computeAmountTaxedOnWithdrawal(futureValue,input.retirementTaxRate)
+  const futureValue = afterTax * Math.pow((1 + rateOfReturn), yearsInvested);
+
+  const amountTaxedOnWithdrawal = computeAmountTaxedOnWithdrawal(futureValue,percentageToDecimal(input.retirementTaxRate))
+
   const afterTaxFutureValue = futureValue - amountTaxedOnWithdrawal
 
   return {
@@ -39,7 +40,7 @@ function compute(input, computeAfterTax, computeAmountTaxedOnWithdrawal){
 
 function computeTSFA(input){
   return compute(input, function(amountInvested, currentTaxRate){
-    return amountInvested * (1 - currentTaxRate/100)
+    return amountInvested * (1 - currentTaxRate)
   },
   function(){
     return 0
@@ -51,7 +52,7 @@ function computeRRSP(input){
       return amountInvested
     },
     function(futureValue, retirementTaxRate){
-      return futureValue * retirementTaxRate/100
+      return futureValue * retirementTaxRate
     })
 }
 

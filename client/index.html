@@ -98,6 +98,7 @@
     const checkPercentageInput = "^(\\.\\d*%?|1?\\d{1,2}(\\.\\d+|\\.?)%?)";//used to validate user input character by character to ensure that the next character does not break the pattern.
     const checkMonetaryInput = "^(\\.\\d{0,2}\\$?|\\d+(\\$|\\.\\d{1,2}\\$?|\\.?))";//used to validate user input character by character to ensure that the next character does not break the pattern
     const integerChecker = "\\d+$"
+
     function parseInputWithPattern(input, pattern){
       const matches = input.match(pattern)
       return matches ? matches[0] : ""

@@ -8,7 +8,12 @@ function roundTo(value, places){
   return Math.floor(value * shift) / shift;
 }
 
+function percentageToDecimal(percentage){
+  return percentage/100;
+}
+
 module.exports= {
   toNumber: toNumber,
-  roundTo: roundTo
+  roundTo: roundTo,
+  percentageToDecimal: percentageToDecimal
 }
