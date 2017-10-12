@@ -160,14 +160,14 @@
 
     function createFormInputFields(){
       const fieldsPerCol = 2;
-      var formContainer = document.getElementById("calculatorForm")
+      let formContainer = document.getElementById("calculatorForm")
       const fieldNames = Object.keys(formFields)
       const numFields = fieldNames.length
-      var formGroup = createFormGroup()
+      let formGroup = createFormGroup()
       formContainer.appendChild(formGroup)
-      var currFormGroup = 0
+      let currFormGroup = 0
 
-      for(var i = 0; i< numFields;i++){
+      for(let i = 0; i< numFields;i++){
          const forFormGroup = Math.floor(i/fieldsPerCol)
             if(forFormGroup != currFormGroup){
               formGroup = createFormGroup()
@@ -180,7 +180,7 @@
     }
 
     function createFormGroup(){
-      var formGroup = document.createElement("div")
+      let formGroup = document.createElement("div")
       formGroup.className+="col form-group"
       return formGroup
     }
@@ -205,27 +205,23 @@
     let calculateButton=null
 
     function cacheFormElements(){
+      formInput = {}
+      formHelpers={}
       for(const field of Object.keys(formFields)){
         formInput[field] = document.getElementById(field)
         formHelpers[field]=document.getElementById(field+"Help")
       }
-
-      calculateButton=document.getElementById("calculateButton")
-      /*formInput = Object.keys(formFields).reduce(function(acc, field){
-        acc[field] = document.getElementById(field)
-        return acc
-      }, {})*/
+      
     }
 
     function calculate() {
       if (!formInput) cacheFormElements();
-      var params = Object.keys(formInput).reduce(function (acc, fieldName) {
+      let params = Object.keys(formInput).reduce(function (acc, fieldName) {
         acc[fieldName] = parseInputWithPattern(formInput[fieldName].value, formFields[fieldName].pattern)
         return acc
       }, {});
 
-
-      var request = new XMLHttpRequest()
+      let request = new XMLHttpRequest()
 
       request.open("POST", calculateURL, true)
       request.setRequestHeader("Accept", "application/json")
@@ -256,26 +252,22 @@
         const resultsPanel = document.getElementById("resultPanel")
         resultsPanel.style.visibility = "visible"
         resultsPanel.style.display = "block"
+        const {TSFA, RRSP} = data
         const TSFAResults = document.getElementById("TSFA")
         const RRSPResults = document.getElementById("RRSP")
-        displayReturnsForTaxAccount(TSFAResults, data.TSFA)
-        displayReturnsForTaxAccount(RRSPResults, data.RRSP)
-        const TSFAAfterTaxFutureValue = data.TSFA.afterTaxFutureValue
-        const RRSPAfterTaxFutureValue = data.RRSP.afterTaxFutureValue
-        const comparison = TSFAAfterTaxFutureValue - RRSPAfterTaxFutureValue
+        displayReturnsForTaxAccount(TSFAResults, TSFA)
+        displayReturnsForTaxAccount(RRSPResults, RRSP)
+        const comparison = TSFA.afterTaxFutureValue - RRSP.afterTaxFutureValue
         const betterChoice = comparison == 0 ? "either" : (comparison >  0 ?  "TSFA" : "RRSP")
         highlightAfterTaxFutureCellFor(betterChoice)
         summarize(betterChoice)
       }
 
       const cachedFormInputValues = {}
-      function allFieldsHaveValue(){
-        return Object.keys(cachedFormInputValues).reduce((acc, fieldName)=>acc&&cachedFormInputValues[fieldName], true)
-      }
 
       function checkAndSaveInputValue(){
-        const formField = event.target.id
-        const updateValue = event.target.value
+        if (!formInput) cacheFormElements();
+        const {id : formField, value : updateValue}= event.target
         const inputChecker = formFields[formField].inputChecker
         const matches = updateValue.match(inputChecker)
         if(matches){
@@ -284,12 +276,6 @@
           cachedFormInputValues[formField]="" //allow deletions of the last character
         }
         event.target.value = cachedFormInputValues[formField] || ""
-        const submitButton = document.getElementById("calculateButton")
-
-        if(allFieldsHaveValue()){
-          submitButton.className.replace("disabled", "active")
-        } else submitButton.className.replace("active", "disabled")
-
       }
 
 
