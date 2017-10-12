@@ -1,3 +1,6 @@
+const CalculatorInput = require("./contracts/CalculatorInput")
+const {roundTo} = require("./util")
+
 function calculate(req, res){
     const input = new CalculatorInput(req.body)
   try {
@@ -17,9 +20,10 @@ function compute(input, computeAfterTax, computeAmountTaxedOnWithdrawal){
   const inflationRate = input.inflationRate
   const yearsInvested = input.yearsInvested
 
-  const afterTax = computeAfterTax(input.amountInvested, input.currentTaxRate) //todo define a "to decimal" operation in the contract class.
+  const afterTax = computeAfterTax(input.amountInvested, input.currentTaxRate)
 
-  const rateOfReturn = (1 + investmentGrowthRate) / (1 + inflationRate) -1; //beware of math errors. may want to use some rounding logic?
+  //should they be expressed as rates or as percentages when used to compute the result?
+  const rateOfReturn = (1 + investmentGrowthRate) / (1 + inflationRate) -1;
 
   const futureValue = afterTax * Math.pow((1 + rateOfReturn/100), yearsInvested);
   const amountTaxedOnWithdrawal = computeAmountTaxedOnWithdrawal(futureValue,input.retirementTaxRate)
@@ -77,54 +81,19 @@ function validate(input){
     }
   }
 
-
-
   if(validationErrors.length > 0) throw new Error(JSON.stringify(validationErrors))
 
 }
 
 
-function toNumber(value){
-  const asNumber = Number.parseFloat(value)
-  return Number.isFinite(asNumber) ? asNumber : null
-
+module.exports= {
+  calculate: calculate,
+  //these are exported for testing purposes; not because they should be generally shared.
+  validate: validate,
+  computeRRSP: computeRRSP,
+  computeTSFA: computeTSFA
 }
 
 
-class CalculatorInput{
-  constructor(data){
-    this.currentTaxRate = toNumber(data.currentTaxRate);
-    this.amountInvested = toNumber(data.amountInvested)
-    this.retirementTaxRate = toNumber(data.retirementTaxRate);
-    this.investmentGrowthRate = toNumber(data.investmentGrowthRate);
-    this.inflationRate = toNumber(data.inflationRate);
-    this.yearsInvested = toNumber(data.yearsInvested)
-
-  }
-}
-
-function roundTo(value, places){
-  const shift = Math.pow(10, places)
-  return Math.floor(value * shift) / shift;
-}
 
 
-module.exports = calculate;
-
-
-
-/*
-  QUESTIONS TO ASK:
-  -clarification on the "after tax" thing
-  -clarify that the interest is compounded yearly
-  -clarify about rounding
-  -clarify whether user is expedcted to input all of the form values?
-  -cannot open the hyperlinked pageto "today's dollars"; not sure what this implies
-  -do we assume that users will be withdrawing when they retire? (vs the time years invested+today)
-  -should we compute the inflation rate ourselves? (i.e. the client an estimate the current time or could attempt to retrieve current inflation rate from an external service)
-
-
-
-
-
- */
