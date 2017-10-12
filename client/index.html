@@ -26,29 +26,22 @@
         <div class="row">
                 <h4>TSFA or RRSP?</h4>
                 <div id="explanatoryText">
-                    <p>
                     TSFAs and RRSPs are alternative tax free investment savings account.
                     Both can help you save for retirement, so which should you choose?
-                    </p>
-                    <p>
                     An <b>RRSP</b> allows you to defer paying tax on your investment.
                     You don't pay any tax on the money you deposit, but you have to pay taxes on the money you withdraw.
-                    </p>
-                    <p>
                     An <b>TSFA</b> is the opposite. You pay tax when you deposit, but you don't pay any taxes on the money you withdraw.
-                    </p>
                     <p>
                     <b><i>To summarize:</i></b>
                     An <b>RRSP</b> is great if you're currently paying a high tax and you don't intend to withdraw until you're retired, when your income and taxes are less.
                     A <b>TSFA</b> is great if you're currently earning less than you expect to and you want to put some money away to save for a house or a car.
-                    <p>
                     <b><i>Still feeling overwhelmed? Our calculator can help</b></i>.
                     Fill out the form to the right and click 'submit' to see which account is better for you.
-                </p>
+                    </p>
             </div>
         </div>
         <div class="row">
-        <div class="col" id="formPanel">
+        <div class="container" id="formPanel">
             <form onsubmit="calculate()">
                 <div class="container">
                     <div class="row" id="calculatorForm"></div>
@@ -194,7 +187,7 @@
       const describedBy = field+"Help"
       const defaultValue=fieldData.defaultValue || ""
       formGroup.insertAdjacentHTML("beforeEnd", '<label for="'+field+'">'+label+'</label>');
-      formGroup.insertAdjacentHTML("beforeEnd", '<input value="'+defaultValue+'" type="text" placeholder="'+placeholder+'" class="form-control input-sm" id="'+field+'" aria-describedby="'+describedBy+'" onkeyup="'+"checkAndSaveInputValue()"+'" onclick="'+"restoreFieldDescriptionToDefault()"+'">');
+      formGroup.insertAdjacentHTML("beforeEnd", '<input value="'+defaultValue+'" type="text" placeholder="'+placeholder+'" class="input-sm" id="'+field+'" aria-describedby="'+describedBy+'" onkeyup="'+"checkAndSaveInputValue()"+'" onclick="'+"restoreFieldDescriptionToDefault()"+'">');
       formGroup.insertAdjacentHTML("beforeEnd",'<small id="'+describedBy+'" class="form-text text-muted">'+description+'</small>')
 
     }

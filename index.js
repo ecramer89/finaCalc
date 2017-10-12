@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path')
 const bodyParser = require('body-parser')
-const {calculate} = require('./server/calculator')
+const {calculate} = require('./server/financialCalculator')
 
 const app = express();
 

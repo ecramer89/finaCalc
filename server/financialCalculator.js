@@ -15,6 +15,15 @@ function calculate(req, res){
   }
 }
 
+function computeRealRateOfReturn(nominalRateOfReturn,inflationRate){
+  return (1 + nominalRateOfReturn) / (1 + inflationRate) -1;
+}
+
+
+function computeFutureValue(afterTax,rateOfReturn,yearsInvested){
+  return afterTax * Math.pow((1 + rateOfReturn), yearsInvested);
+}
+
 function compute(input, computeAfterTax, computeAmountTaxedOnWithdrawal){
   const nominalRateOfReturn = percentageToDecimal(input.investmentGrowthRate)
   const inflationRate = percentageToDecimal(input.inflationRate)
@@ -22,9 +31,9 @@ function compute(input, computeAfterTax, computeAmountTaxedOnWithdrawal){
 
   const afterTax = computeAfterTax(input.amountInvested, percentageToDecimal(input.currentTaxRate))
 
-  const rateOfReturn = (1 + nominalRateOfReturn) / (1 + inflationRate) -1;
+  const rateOfReturn = computeRealRateOfReturn(nominalRateOfReturn, inflationRate)
 
-  const futureValue = afterTax * Math.pow((1 + rateOfReturn), yearsInvested);
+  const futureValue = computeFutureValue(afterTax, rateOfReturn, yearsInvested)
 
   const amountTaxedOnWithdrawal = computeAmountTaxedOnWithdrawal(futureValue,percentageToDecimal(input.retirementTaxRate))
 
@@ -38,29 +47,30 @@ function compute(input, computeAfterTax, computeAmountTaxedOnWithdrawal){
   }
 }
 
+function deductTaxFromAmount(amount, taxRate){
+  return amount * (1 - taxRate)
+}
+
+function computeTaxDeducted(amount, taxRate){
+  return amount * taxRate
+}
+
 function computeTSFA(input){
-  return compute(input, function(amountInvested, currentTaxRate){
-    return amountInvested * (1 - currentTaxRate)
-  },
-  function(){
-    return 0
-  })
+  return compute(input, deductTaxFromAmount, function(){return 0})
 }
 
 function computeRRSP(input){
   return compute(input, function(amountInvested){
       return amountInvested
     },
-    function(futureValue, retirementTaxRate){
-      return futureValue * retirementTaxRate
-    })
+    computeTaxDeducted)
 }
 
 function validate(input){
   const validationErrors = []
   for(const field in input){
     const value = input[field]
-    if(value === null){
+    if(value === null){ //strict check on null because 0 is allowed.
       validationErrors.push({field: field, message: "is required."})
     }
     else {
