@@ -2,13 +2,8 @@ import CalculatorInput from "./contracts/CalculatorInput"
 import {roundTo,percentageToDecimal} from "./util"
 
 export function handler(req, res){
-    const input = new CalculatorInput(req.body)
   try {
-    validate(input)
-    const result = {
-      TSFA: computeTSFA(input),
-      RRSP: computeRRSP(input)
-    }
+    const result = calculate(new CalculatorInput(req.body))
     res.send(result)
   }catch(error){
       res.status(400).send(error.message)
@@ -16,7 +11,13 @@ export function handler(req, res){
 }
 
 
-
+export function calculate(calculatorInput){
+  validate(calculatorInput)
+  return {
+    TSFA: computeTSFA(calculatorInput),
+    RRSP: computeRRSP(calculatorInput)
+  }
+}
 
 export function computeRealRateOfReturn(nominalRateOfReturn,inflationRate){
   return (1 + nominalRateOfReturn) / (1 + inflationRate) -1;
