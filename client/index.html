@@ -193,31 +193,31 @@
       const describedBy = field+"Help"
       const defaultValue=fieldData.defaultValue || ""
       formGroup.insertAdjacentHTML("beforeEnd", '<label for="'+field+'">'+label+'</label>');
-      formGroup.insertAdjacentHTML("beforeEnd", '<input value="'+defaultValue+'" type="text" placeholder="'+placeholder+'" class="form-control input-sm" id="'+field+'" aria-describedby="'+describedBy+'" onkeyup="'+"checkAndSaveInputValue()"+'">');
+      formGroup.insertAdjacentHTML("beforeEnd", '<input value="'+defaultValue+'" type="text" placeholder="'+placeholder+'" class="form-control input-sm" id="'+field+'" aria-describedby="'+describedBy+'" onkeyup="'+"checkAndSaveInputValue()"+'" onclick="'+"restoreFieldDescriptionToDefault()"+'">');
       formGroup.insertAdjacentHTML("beforeEnd",'<small id="'+describedBy+'" class="form-text text-muted">'+description+'</small>')
 
     }
 
 
-    let formInput = null //lazily initialize on first call to calculate.
+    let fieldInputs = null //lazily initialize on first call to calculate.
     //elements aren't mounted to DOM when the script initially executes.
-    let formHelpers=null
+    let fieldDescriptions=null
     let calculateButton=null
 
     function cacheFormElements(){
-      formInput = {}
-      formHelpers={}
+      fieldInputs = {}
+      fieldDescriptions={}
       for(const field of Object.keys(formFields)){
-        formInput[field] = document.getElementById(field)
-        formHelpers[field]=document.getElementById(field+"Help")
+        fieldInputs[field] = document.getElementById(field)
+        fieldDescriptions[field]=document.getElementById(field+"Help")
       }
-      
+
     }
 
     function calculate() {
-      if (!formInput) cacheFormElements();
-      let params = Object.keys(formInput).reduce(function (acc, fieldName) {
-        acc[fieldName] = parseInputWithPattern(formInput[fieldName].value, formFields[fieldName].pattern)
+      if (!fieldInputs) cacheFormElements();
+      let params = Object.keys(fieldInputs).reduce(function (acc, fieldName) {
+        acc[fieldName] = parseInputWithPattern(fieldInputs[fieldName].value, formFields[fieldName].pattern)
         return acc
       }, {});
 
@@ -243,7 +243,6 @@
           }
         }
       }
-
       request.send(JSON.stringify(params))
       event.preventDefault()
     }
@@ -266,7 +265,7 @@
       const cachedFormInputValues = {}
 
       function checkAndSaveInputValue(){
-        if (!formInput) cacheFormElements();
+        if (!fieldInputs) cacheFormElements();
         const {id : formField, value : updateValue}= event.target
         const inputChecker = formFields[formField].inputChecker
         const matches = updateValue.match(inputChecker)
@@ -301,14 +300,22 @@
       }
 
       function injectErrorMessageIntoDescription(error){
-        if(!formInput) cacheFormElements()
+        if(!fieldInputs) cacheFormElements()
         const field = error.field
         const fieldLabel = formFields[field].label
-        fieldHelp = document.getElementById(field+'Help')
-        fieldHelp.innerText = fieldLabel+' '+error.message
-        fieldHelp.style.backgroundColor="#F39FAD"
-        fieldHelp.style.fontWeight="bold"
+        const fieldDescription = fieldDescriptions[field]
+        fieldDescription.innerText = fieldLabel+' '+error.message
+        fieldDescription.style.backgroundColor="#F39FAD"
+        fieldDescription.style.fontWeight="bold"
 
+      }
+
+      function restoreFieldDescriptionToDefault(){
+        const field = event.target.id
+        const fieldDescription = fieldDescriptions[field]
+        fieldDescription.innerText = formFields[field].description
+        fieldDescription.style.backgroundColor="white"
+        fieldDescription.style.fontWeight="normal"
       }
 
 </script>
