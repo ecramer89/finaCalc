@@ -10,7 +10,6 @@ export function handler(req, res){
   }
 }
 
-
 export function calculate(calculatorInput){
   validate(calculatorInput)
   return {

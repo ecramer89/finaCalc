@@ -52,7 +52,7 @@ function validate(input) {
         case "retirementTaxRate":
         case "inflationRate":
         case "investmentGrowthRate":
-          if (value > 100) {
+          if (Math.abs(value) > 100) {
             validationErrors.push({ field: field, message: "cannot exceed 100." });
           }
           break;
