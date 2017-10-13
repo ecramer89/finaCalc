@@ -14,6 +14,12 @@ describe("financial calculator test", ()=>{
 
 
     //each of these should throw a validation error.
+    /*
+    test: negative inputs for rates are okay
+    but no rate can exceed 100
+    years and amount invested cant be negative
+
+     */
     describe("invalid input", ()=>{
 
     })
@@ -32,17 +38,17 @@ describe("financial calculator test", ()=>{
 
   })
 
-
+  /*expected results taken from: http://financeformulas.net/Real_Rate_of_Return.html#calcHeader
+   * to accommodate rounding and to keep this test independent of my round function, I test correctness of
+   * returned value by comparing substrings of the stringified representations of numeric result.
+   * */
   function compareNumberStrings(expectedNumber, resultGenerator){
       const expectedAsString = (''+expectedNumber)
       const resultSubstring = (''+resultGenerator()).slice(0,expectedAsString.length)
-      return resultSubstring == expectedAsString
+      return resultSubstring === expectedAsString
   }
 
-  /*expected results taken from: http://financeformulas.net/Real_Rate_of_Return.html#calcHeader
-  * to accommodate rounding and to keep this test independent of my round function, I test correctness of
-  * returned value by comparing substrings of the stringified representations of numeric result.
-  * */
+
   describe("test computeRealRateOfReturn", ()=>{
 
     describe("nominal is 0", ()=>{
@@ -71,18 +77,14 @@ describe("financial calculator test", ()=>{
         const inflation = .015
         const expected = .00788
         it("should return expected result", ()=>{
-          const expectedAsString = (''+expected)
-          const resultSubstring = (''+FinancialCalculator.computeRealRateOfReturn(nominal,inflation)).slice(0,expectedAsString.length)
-          assert.equal(resultSubstring,expectedAsString)
+          assert.ok(compareNumberStrings(expected, ()=>FinancialCalculator.computeRealRateOfReturn(nominal,inflation)))
         })
       })
       describe("inflation is positive, equals nominal", ()=>{
         const inflation = nominal
         const expected = 0
         it("should return expected result", ()=>{
-          const expectedAsString = (''+expected)
-          const resultSubstring = (''+FinancialCalculator.computeRealRateOfReturn(nominal,inflation)).slice(0,expectedAsString.length)
-          assert.equal(resultSubstring,expectedAsString)
+          assert.ok(compareNumberStrings(expected, ()=>FinancialCalculator.computeRealRateOfReturn(nominal,inflation)))
         })
       })
       describe("inflation is positive, greater than nominal", ()=>{
@@ -91,18 +93,14 @@ describe("financial calculator test", ()=>{
         //in order to test that funtion returns roughly the same result, I check that the real output matches the first 3 digits (of the percentage representation) assuming that the
         //web browser output did not round.
         it("should return expected result", ()=>{
-          const expectedAsString = (''+expected)
-          const resultSubstring = (''+FinancialCalculator.computeRealRateOfReturn(nominal,inflation)).slice(0,expectedAsString.length)
-          assert.equal(resultSubstring,expectedAsString)
+          assert.ok(compareNumberStrings(expected, ()=>FinancialCalculator.computeRealRateOfReturn(nominal,inflation)))
         })
       })
       describe("inflation is 0", ()=>{
         const inflation = 0
         const expected = .022
         it("should return expected result", ()=>{
-          const expectedAsString = (''+expected)
-          const resultSubstring = (''+FinancialCalculator.computeRealRateOfReturn(nominal,inflation)).slice(0,expectedAsString.length)
-          assert.equal(resultSubstring,expectedAsString)
+          assert.ok(compareNumberStrings(expected, ()=>FinancialCalculator.computeRealRateOfReturn(nominal,inflation)))
         })
 
       })
@@ -114,9 +112,7 @@ describe("financial calculator test", ()=>{
         const inflation = -.036
         const expected = .063
         it("should return expected result", ()=>{
-          const expectedAsString = (''+expected)
-          const resultSubstring = (''+FinancialCalculator.computeRealRateOfReturn(nominal,inflation)).slice(0,expectedAsString.length)
-          assert.equal(resultSubstring,expectedAsString)
+          assert.ok(compareNumberStrings(expected, ()=>FinancialCalculator.computeRealRateOfReturn(nominal,inflation)))
         })
 
       })
@@ -126,9 +122,7 @@ describe("financial calculator test", ()=>{
         const nominal = -.036
         const expected = -.0595
         it("should return expected result", ()=>{
-          const expectedAsString = (''+expected)
-          const resultSubstring = (''+FinancialCalculator.computeRealRateOfReturn(nominal,inflation)).slice(0,expectedAsString.length)
-          assert.equal(resultSubstring,expectedAsString)
+          assert.ok(compareNumberStrings(expected, ()=>FinancialCalculator.computeRealRateOfReturn(nominal,inflation)))
         })
       })
 
@@ -136,7 +130,65 @@ describe("financial calculator test", ()=>{
 
   /*expected values taken from: http://financeformulas.net/Future_Value.html#calcHeader */
   describe("test computeFutureValue", ()=>{
-//afterTax,rateOfReturn,yearsInvested
+
+    describe("after tax is positive", ()=>{
+      const afterTax = 856.79
+      describe("rate of return is negative", ()=>{
+        const rateOfReturn = -.045
+        describe("years invested is 0", ()=>{
+          const yearsInvested = 0
+          const expected = 856.79
+          it("should return the correct result", ()=>{
+            assert.ok(compareNumberStrings(expected, ()=>FinancialCalculator.computeFutureValue(afterTax, rateOfReturn, yearsInvested)))
+          })
+        })
+        describe("years invested is positive", ()=>{
+          const yearsInvested = 55
+          const expected = 68.08
+          it("should return the correct result", ()=>{
+            assert.ok(compareNumberStrings(expected, ()=>FinancialCalculator.computeFutureValue(afterTax, rateOfReturn, yearsInvested)))
+          })
+        })
+      })
+
+      describe("rate of return is positive", ()=>{
+        const rateOfReturn = .045
+        describe("years invested is 0", ()=>{
+          const yearsInvested = 0
+          const expected = 856.79
+          it("should return the correct result", ()=>{
+            assert.ok(compareNumberStrings(expected, ()=>FinancialCalculator.computeFutureValue(afterTax, rateOfReturn, yearsInvested)))
+          })
+        })
+        describe("years invested is positive", ()=>{
+          const yearsInvested = 55
+          const expected = 9644.29
+          it("should return the correct result", ()=>{
+            assert.ok(compareNumberStrings(expected, ()=>FinancialCalculator.computeFutureValue(afterTax, rateOfReturn, yearsInvested)))
+          })
+        })
+      })
+
+      describe("rate of return is 0", ()=>{
+        const rateOfReturn = 0
+        describe("years invested is 0", ()=>{
+          const yearsInvested = 0
+          const expected = 856.79
+          it("should return the correct result", ()=>{
+            assert.ok(compareNumberStrings(expected, ()=>FinancialCalculator.computeFutureValue(afterTax, rateOfReturn, yearsInvested)))
+          })
+        })
+        describe("years invested is positive", ()=>{
+          const yearsInvested = 55
+          const expected = 856.79
+          it("should return the correct result", ()=>{
+            assert.ok(compareNumberStrings(expected, ()=>FinancialCalculator.computeFutureValue(afterTax, rateOfReturn, yearsInvested)))
+          })
+        })
+      })
+    })
+
+
     describe("after tax is 0", ()=>{
       const afterTax = 0
       describe("rate of return is negative", ()=>{
@@ -145,11 +197,15 @@ describe("financial calculator test", ()=>{
           const yearsInvested = 0
           const expected = 0
           it("should return the correct result", ()=>{
-            assert.strictEqual(expected, 0)
+            assert.strictEqual(FinancialCalculator.computeFutureValue(afterTax, rateOfReturn, yearsInvested), expected)
           })
         })
         describe("years invested is positive", ()=>{
           const yearsInvested = 55
+          const expected = 0
+          it("should return the correct result", ()=>{
+            assert.strictEqual(FinancialCalculator.computeFutureValue(afterTax, rateOfReturn, yearsInvested), expected)
+          })
         })
       })
 
@@ -157,9 +213,17 @@ describe("financial calculator test", ()=>{
         const rateOfReturn = .045
         describe("years invested is 0", ()=>{
           const yearsInvested = 0
+          const expected = 0
+          it("should return the correct result", ()=>{
+            assert.strictEqual(FinancialCalculator.computeFutureValue(afterTax, rateOfReturn, yearsInvested), expected)
+          })
         })
         describe("years invested is positive", ()=>{
           const yearsInvested = 55
+          const expected = 0
+          it("should return the correct result", ()=>{
+            assert.strictEqual(FinancialCalculator.computeFutureValue(afterTax, rateOfReturn, yearsInvested), expected)
+          })
         })
       })
 
@@ -167,21 +231,20 @@ describe("financial calculator test", ()=>{
         const rateOfReturn = 0
         describe("years invested is 0", ()=>{
           const yearsInvested = 0
+          const expected = 0
+          it("should return the correct result", ()=>{
+            assert.strictEqual(FinancialCalculator.computeFutureValue(afterTax, rateOfReturn, yearsInvested), expected)
+          })
         })
         describe("years invested is positive", ()=>{
           const yearsInvested = 55
+          const expected = 0
+          it("should return the correct result", ()=>{
+            assert.strictEqual(FinancialCalculator.computeFutureValue(afterTax, rateOfReturn, yearsInvested), expected)
+          })
         })
       })
     })
-
-    describe("after tax is negative", ()=>{
-
-    })
-
-    describe("after tax is positive", ()=>{
-
-    })
-
 
   })
 
