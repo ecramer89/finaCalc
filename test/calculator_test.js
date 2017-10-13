@@ -23,13 +23,15 @@ describe("financial calculator test", ()=>{
      currentTaxRate,amountInvested,retirementTaxRate,investmentGrowthRate,inflationRate,yearsInvested
      */
     function validInputExceptMissing(field){
+     return validInputExcept(field, null)
+    }
+
+    function validInputExcept(field, badValue){
       const input = {
         ...TestData.validInputBreaksEven,
-        field: null
+        [field]: badValue
       }
-
       return input
-
     }
 
 
@@ -38,23 +40,31 @@ describe("financial calculator test", ()=>{
       describe("invalid currentTaxRate", ()=>{
         const field = "currentTaxRate"
         describe("missing", ()=>{
-          it("should throw a currentTaxRate is required validation error", ()=>{
+          it(`should throw a ${field} is required validation error`, ()=>{
             assert.throws(()=>{
               FinancialCalculator.calculate(validInputExceptMissing(field))
             }, err=>{
-              const message = JSON.parse(err)
-              if(message && message.find(validationError=>validationError.field === field && validationError.message === "is required.")) return true;
-            }, 'unexpected error')
+              const validationErrors = JSON.parse(err.message)
+              if(Array.isArray(validationErrors) &&
+                validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required.")) return true;
+            },
+              'unexpected error')
           })
         })
         describe("not a number", ()=>{
-
+          it(`should throw a ${field} is required validation error`, ()=>{
+            assert.throws(()=>{
+                FinancialCalculator.calculate(validInputExcept(field, "sansSkeleton"))
+              }, err=>{
+                const validationErrors = JSON.parse(err.message)
+                if(Array.isArray(validationErrors) &&
+                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required.")) return true;
+              },
+              'unexpected error')
+          })
         })
-
       })
-
     })
-
   })
 
   describe("test computeTSFA", ()=>{
