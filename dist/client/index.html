@@ -133,7 +133,7 @@
       fieldDescriptionElement.style.fontWeight="bold"
     }
     function applyFutureValueCellHighlightStyle(futureValueElement){
-      futureValueElement.style.backgroundColor="yellow"
+      futureValueElement.style.backgroundColor="#A2F629"
     }
     function applyFutureValueCellNormalStyle(futureValueElement){
       futureValueElement.style.backgroundColor="white"
@@ -320,7 +320,7 @@
         const fieldDescription = fieldDescriptions[field]
         fieldDescription.innerText = formFields[field].description
         applyFieldDescriptionNormalStyle(fieldDescription)
-        fieldInputs[field].value=""
+        fieldInputs[field].value=formFields[field].defaultValue || ""
       }
 
 </script>
