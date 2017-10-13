@@ -20,7 +20,7 @@ export function calculate(calculatorInput){
 }
 
 export function computeRealRateOfReturn(nominalRateOfReturn,inflationRate){
-  return (1 + nominalRateOfReturn) / (1 + inflationRate) -1;
+  return ((1 + nominalRateOfReturn) / (1 + inflationRate)) -1;
 }
 
 
