@@ -1,4 +1,6 @@
 import * as FinancialCalculator from "../server/financialCalculator"
+import CalculatorInput from "../server/contracts/CalculatorInput"
+
 import assert from 'assert'
 import * as TestData from "./testData"
 
@@ -31,7 +33,7 @@ describe("financial calculator test", ()=>{
         ...TestData.validInputBreaksEven,
         [field]: badValue
       }
-      return input
+      return new CalculatorInput(input)
     }
 
 
@@ -64,6 +66,48 @@ describe("financial calculator test", ()=>{
           })
         })
       })
+
+
+      describe("invalid amountInvested", ()=>{
+        const field = "amountInvested"
+        describe("missing", ()=>{
+          it(`should throw a ${field} is required validation error`, ()=>{
+            assert.throws(()=>{
+                FinancialCalculator.calculate(validInputExceptMissing(field))
+              }, err=>{
+                const validationErrors = JSON.parse(err.message)
+                if(Array.isArray(validationErrors) &&
+                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required.")) return true;
+              },
+              'unexpected error')
+          })
+        })
+        describe("not a number", ()=>{
+          it(`should throw a ${field} is required validation error`, ()=>{
+            assert.throws(()=>{
+                FinancialCalculator.calculate(validInputExcept(field, "sansSkeleton"))
+              }, err=>{
+                const validationErrors = JSON.parse(err.message)
+                if(Array.isArray(validationErrors) &&
+                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required.")) return true;
+              },
+              'unexpected error')
+          })
+        })
+        describe("is negative", ()=>{
+          it(`should throw a ${field} cannot be negative validation error.`, ()=>{
+            assert.throws(()=>{
+                FinancialCalculator.calculate(validInputExcept(field, -1234.56))
+              }, err=>{
+                const validationErrors = JSON.parse(err.message)
+                if(Array.isArray(validationErrors) &&
+                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "cannot be negative.")) return true;
+              },
+              'unexpected error')
+          })
+        })
+      })
+
     })
   })
 

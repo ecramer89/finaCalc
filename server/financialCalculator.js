@@ -72,7 +72,7 @@ export function validate(input){
   for(const field in input){
     const value = input[field]
     if(value === null){ //strict check on null because 0 is allowed.
-      validationErrors.push({field: field, message: "is required."})
+      validationErrors.push({field, message: "is required."})
     }
     else {
       switch(field){
@@ -81,13 +81,13 @@ export function validate(input){
         case "inflationRate":
         case "investmentGrowthRate":
           if(value < 0 || value > 100) {
-            validationErrors.push({field: field, message: "must be a valid percentage (between 0 and 100)"})
+            validationErrors.push({field, message: "must be a valid percentage (between 0 and 100)"})
           }
           break;
         case "amountInvested":
         case "yearsInvested":
           if(value < 0){
-            validationErrors.push({field: field, message: "cannot be negative."})
+            validationErrors.push({field, message: "cannot be negative."})
           }
       }
     }
