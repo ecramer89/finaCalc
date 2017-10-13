@@ -32,6 +32,13 @@ describe("financial calculator test", ()=>{
 
   })
 
+
+  function compareNumberStrings(expectedNumber, resultGenerator){
+      const expectedAsString = (''+expectedNumber)
+      const resultSubstring = (''+resultGenerator()).slice(0,expectedAsString.length)
+      return resultSubstring == expectedAsString
+  }
+
   /*expected results taken from: http://financeformulas.net/Real_Rate_of_Return.html#calcHeader
   * to accommodate rounding and to keep this test independent of my round function, I test correctness of
   * returned value by comparing substrings of the stringified representations of numeric result.
@@ -45,9 +52,7 @@ describe("financial calculator test", ()=>{
        const inflation = .021
         const expected = -.0205
         it("should return expected result", ()=>{
-          const expectedAsString = (''+expected)
-          const resultSubstring = (''+FinancialCalculator.computeRealRateOfReturn(nominal,inflation)).slice(0,expectedAsString.length)
-          assert.equal(resultSubstring,expectedAsString)
+          assert.ok(compareNumberStrings(expected, ()=>FinancialCalculator.computeRealRateOfReturn(nominal,inflation)))
         })
       })
 
@@ -129,13 +134,55 @@ describe("financial calculator test", ()=>{
 
   })
 
+  /*expected values taken from: http://financeformulas.net/Future_Value.html#calcHeader */
   describe("test computeFutureValue", ()=>{
 //afterTax,rateOfReturn,yearsInvested
+    describe("after tax is 0", ()=>{
+      const afterTax = 0
+      describe("rate of return is negative", ()=>{
+         const rateOfReturn = -.045
+        describe("years invested is 0", ()=>{
+          const yearsInvested = 0
+          const expected = 0
+          it("should return the correct result", ()=>{
+            assert.strictEqual(expected, 0)
+          })
+        })
+        describe("years invested is positive", ()=>{
+          const yearsInvested = 55
+        })
+      })
+
+      describe("rate of return is positive", ()=>{
+        const rateOfReturn = .045
+        describe("years invested is 0", ()=>{
+          const yearsInvested = 0
+        })
+        describe("years invested is positive", ()=>{
+          const yearsInvested = 55
+        })
+      })
+
+      describe("rate of return is 0", ()=>{
+        const rateOfReturn = 0
+        describe("years invested is 0", ()=>{
+          const yearsInvested = 0
+        })
+        describe("years invested is positive", ()=>{
+          const yearsInvested = 55
+        })
+      })
+    })
+
+    describe("after tax is negative", ()=>{
+
+    })
+
+    describe("after tax is positive", ()=>{
+
+    })
+
 
   })
-
-
-
-
 
 })

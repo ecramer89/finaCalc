@@ -7,7 +7,7 @@ exports.handler = handler;
 exports.calculate = calculate;
 exports.computeRealRateOfReturn = computeRealRateOfReturn;
 exports.computeFutureValue = computeFutureValue;
-exports.compute = compute;
+exports.composeComputations = composeComputations;
 exports.deductTaxFromAmount = deductTaxFromAmount;
 exports.computeTaxDeducted = computeTaxDeducted;
 exports.computeTSFA = computeTSFA;
@@ -47,7 +47,7 @@ function computeFutureValue(afterTax, rateOfReturn, yearsInvested) {
   return afterTax * Math.pow(1 + rateOfReturn, yearsInvested);
 }
 
-function compute(input, computeAfterTax, computeAmountTaxedOnWithdrawal) {
+function composeComputations(input, computeAfterTax, computeAmountTaxedOnWithdrawal) {
   var nominalRateOfReturn = (0, _util.percentageToDecimal)(input.investmentGrowthRate);
   var inflationRate = (0, _util.percentageToDecimal)(input.inflationRate);
   var yearsInvested = input.yearsInvested;
@@ -79,13 +79,13 @@ function computeTaxDeducted(amount, taxRate) {
 }
 
 function computeTSFA(input) {
-  return compute(input, deductTaxFromAmount, function () {
+  return composeComputations(input, deductTaxFromAmount, function () {
     return 0;
   });
 }
 
 function computeRRSP(input) {
-  return compute(input, function (amountInvested) {
+  return composeComputations(input, function (amountInvested) {
     return amountInvested;
   }, computeTaxDeducted);
 }
