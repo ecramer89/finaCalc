@@ -52,37 +52,16 @@
         <div class="row" id="resultPanel">
             <div class="col">
             <div class="container">
-                <div class="row" id="resultLabels">
-                    <div class="col resultLabel">Account Type</div>
-                    <div class="col resultLabel">After-Tax</div>
-                    <div class="col resultLabel">Future-Value</div>
-                    <div class="col resultLabel">Amount Taxed</div>
-                    <div class="col resultLabel">Withdrawal After-Tax</div>
-                </div>
-                <div class="row" id="TSFA">
-                    <div class="col resultLabel">TSFA</div>
-                    <div class="col" id="TSFA-afterTax"></div>
-                    <div class="col" id="TSFA-futureValue"></div>
-                    <div class="col" id="TSFA-amountTaxedOnWithdrawal"></div>
-                    <div class="col" id="TSFA-afterTaxFutureValue"></div>
-                </div>
-                <div class="row" id="RRSP">
-                    <div class="col resultLabel">RRSP</div>
-                    <div class="col" id="RRSP-afterTax"></div>
-                    <div class="col" id="RRSP-futureValue"></div>
-                    <div class="col" id="RRSP-amountTaxedOnWithdrawal"></div>
-                    <div class="col" id="RRSP-afterTaxFutureValue"></div>
-                </div>
+                <div class="row" id="resultLabels"></div>
+                <div class="row" id="TSFA"></div>
+                <div class="row" id="RRSP"></div>
             </div>
         </div>
     </div>
-        <div class="row" id="resultsSummary">
-
-        </div>
+        <div class="row" id="resultsSummary"></div>
     </div>
     </body>
 <script>
-
 
     const calculateURL = "http://localhost:3000/calculate"
 
@@ -124,7 +103,8 @@
       {field: "afterTax",label: "Deposit After Tax"},
       {field: "futureValue",label: "Future Value"},
       {field: "amountTaxedOnWithdrawal",label: "Future Value Total Tax"},
-      {field: "afterTaxFutureValue",label: "Future Value After Tax"}]
+      {field: "afterTaxFutureValue",label: "Future Value After Tax"}
+      ]
 
     const resultsSummaries = {
       either: "The two accounts break even. You may wish to double-check your estimates of your current and expected retirement income tax brackets.",
@@ -132,7 +112,36 @@
       RRSP: "The RRSP would be a better choice for you. Be sure to re-calculate if you anticipate having to withdraw some of your money earlier."
     }
 
+    //cached references to frequently accessed DOM elements
+    //elements aren't mounted to DOM when scripts execute on first render, so lazily initialize these are they are needed.
+    let fieldInputs = null
+    let fieldDescriptions=null
+    let resultsCells=null
+    let calculateButton=null
+    let resultsPanel = null
+    let TSFAResults = null
+    let RRSPResults = null
+    let summary = null
+
+    //field description changes style dynamically to show error messages; save style objects here for easy edits.
+    function applyFieldDescriptionNormalStyle(fieldDescriptionElement){
+      fieldDescriptionElement.style.backgroundColor="white"
+      fieldDescriptionElement.style.fontWeight="normal"
+    }
+    function applyFieldDescriptionErrorStyle(fieldDescriptionElement){
+      fieldDescriptionElement.style.backgroundColor="#F39FAD"
+      fieldDescriptionElement.style.fontWeight="bold"
+    }
+    function applyFutureValueCellHighlightStyle(futureValueElement){
+      futureValueElement.style.backgroundColor="yellow"
+    }
+    function applyFutureValueCellNormalStyle(futureValueElement){
+      futureValueElement.style.backgroundColor="white"
+    }
+
+
     createFormInputFields()
+    createResultsCells()
 
     function createFormInputFields(){
       const fieldsPerCol = 2;
@@ -155,6 +164,24 @@
       formContainer.insertAdjacentHTML("afterEnd",'<div class="row"><button type="submit" class="btn btn-primary btn-sm disabled" id="calculateButton">Calculate</button></div>')
     }
 
+    function createResultsCells(){
+      const resultLabels = document.getElementById("resultLabels")
+      const TSFAResults = document.getElementById("TSFA")
+      const RRSPResults = document.getElementById("RRSP")
+
+      resultLabels.insertAdjacentHTML("afterbegin", `<div class="col resultLabel">AccountType</div>`)
+      TSFAResults.insertAdjacentHTML("afterbegin", `<div class="col resultLabel">TSFA</div>`)
+      RRSPResults.insertAdjacentHTML("afterbegin", `<div class="col resultLabel">RRSP</div>`)
+
+      resultsFields.forEach(resultField=>{
+        const {field, label} = resultField
+        resultLabels.insertAdjacentHTML("beforeend", `<div class="col resultLabel">${label}</div>`)
+        TSFAResults.insertAdjacentHTML("beforeend", `<div class="col" id="TSFA-${field}"></div>`)
+        RRSPResults.insertAdjacentHTML("beforeend", `<div class="col" id="RRSP-${field}"></div>`)
+      })
+
+    }
+
     function createFormGroup(){
       let formGroup = document.createElement("div")
       formGroup.className+="col form-group"
@@ -174,13 +201,6 @@
     }
 
 
-    let fieldInputs = null //lazily initialize on first call to calculate.
-    //elements aren't mounted to DOM when the script initially executes.
-    let fieldDescriptions=null
-    let resultsCells=null
-    let calculateButton=null
-
-    //save references to form elements that need to be frequently retrieved from DOM and manipulated.
     function cacheElements(){
       fieldInputs = {}
       fieldDescriptions={}
@@ -234,33 +254,41 @@
       event.preventDefault()
     }
 
-
-    let resultsPanel = null
-    let TSFAResults = null
-    let RRSPResults = null
       function displayInResultsPanels(data){
         resultsPanel = resultsPanel || document.getElementById("resultPanel")
+        TSFAResults = TSFAResults || document.getElementById("TSFA")
+        RRSPResults = RRSPResults || document.getElementById("RRSP")
         resultsPanel.style.visibility = "visible"
         resultsPanel.style.display = "block"
         const {TSFA, RRSP} = data
-        TSFAResults = TSFAResults || document.getElementById("TSFA")
-        RRSPResults = RRSPResults || document.getElementById("RRSP")
         displayReturnsForTaxAccount(TSFAResults, TSFA)
         displayReturnsForTaxAccount(RRSPResults, RRSP)
         const comparison = TSFA.afterTaxFutureValue - RRSP.afterTaxFutureValue
-        const betterChoice = comparison == 0 ? "either" : (comparison >  0 ?  "TSFA" : "RRSP")
-        highlightAfterTaxFutureCellFor(betterChoice)
-        summarize(betterChoice)
+        const betterAccount = comparison == 0 ? "either" : (comparison >  0 ?  "TSFA" : "RRSP")
+        highlightAfterTaxFutureCellFor(betterAccount)
+        summarize(betterAccount)
       }
 
     function highlightAfterTaxFutureCellFor(betterAccount){
-      if(betterAccount == "either") return
       if(!fieldInputs) cacheElements()
-      const resultCell = resultsCells[betterAccount+"-afterTaxFutureValue"]
-      resultCell.style.backgroundColor="yellow"
+      const TSFAFutureValueCell = resultsCells["TSFA-afterTaxFutureValue"]
+      const RRSPFutureValueCell = resultsCells["RRSP-afterTaxFutureValue"]
+      switch(betterAccount){
+        case "either":
+          applyFutureValueCellNormalStyle(TSFAFutureValueCell)
+          applyFutureValueCellNormalStyle(RRSPFutureValueCell)
+          break
+        case "TSFA":
+          applyFutureValueCellHighlightStyle(TSFAFutureValueCell)
+          applyFutureValueCellNormalStyle(RRSPFutureValueCell)
+          break;
+        case "RRSP":
+          applyFutureValueCellNormalStyle(TSFAFutureValueCell)
+          applyFutureValueCellHighlightStyle(RRSPFutureValueCell)
+          break;
+      }
     }
 
-    let summary = null
     function summarize(betterAccount){
       summary = summary || document.getElementById("resultsSummary")
       summary.innerText = resultsSummaries[betterAccount]
@@ -282,10 +310,8 @@
         const field = error.field
         const fieldLabel = formFields[field].label
         const fieldDescription = fieldDescriptions[field]
-        fieldDescription.innerText = fieldLabel+' '+error.message
-        fieldDescription.style.backgroundColor="#F39FAD"
-        fieldDescription.style.fontWeight="bold"
-
+        fieldDescription.innerText = `${fieldLabel} ${error.message}`
+        applyFieldDescriptionErrorStyle(fieldDescription)
       }
 
       function restoreFieldDescriptionToDefault(){
@@ -293,8 +319,7 @@
         const field = event.target.id
         const fieldDescription = fieldDescriptions[field]
         fieldDescription.innerText = formFields[field].description
-        fieldDescription.style.backgroundColor="white"
-        fieldDescription.style.fontWeight="normal"
+        applyFieldDescriptionNormalStyle(fieldDescription)
       }
 
 </script>
