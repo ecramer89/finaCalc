@@ -45,7 +45,7 @@ function validate(input) {
     var value = input[field];
     if (value === null) {
       //strict check on null because 0 is allowed.
-      validationErrors.push({ field: field, message: "is required." });
+      validationErrors.push({ field: field, message: "is required and must be a number." });
     } else {
       switch (field) {
         case "currentTaxRate":

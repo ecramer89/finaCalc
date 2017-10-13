@@ -44,25 +44,25 @@ describe("financial calculator test", function () {
       describe("invalid retirementTaxRate", function () {
         var field = "retirementTaxRate";
         describe("missing", function () {
-          it("should throw a " + field + " is required validation error", function () {
+          it("should throw a " + field + " is required and must be a number validation error", function () {
             _assert2.default.throws(function () {
               FinancialCalculator.calculate(validInputExceptMissing(field));
             }, function (err) {
               var validationErrors = JSON.parse(err.message);
               if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
-                return validationError.field === field && validationError.message === "is required.";
+                return validationError.field === field && validationError.message === "is required and must be a number.";
               })) return true;
             }, 'unexpected error');
           });
         });
         describe("not a number", function () {
-          it("should throw a " + field + " is required validation error", function () {
+          it("should throw a " + field + " is required and must be a number validation error", function () {
             _assert2.default.throws(function () {
               FinancialCalculator.calculate(validInputExcept(field, "sansSkeleton"));
             }, function (err) {
               var validationErrors = JSON.parse(err.message);
               if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
-                return validationError.field === field && validationError.message === "is required.";
+                return validationError.field === field && validationError.message === "is required and must be a number.";
               })) return true;
             }, 'unexpected error');
           });
@@ -98,25 +98,25 @@ describe("financial calculator test", function () {
       describe("invalid inflationRate", function () {
         var field = "inflationRate";
         describe("missing", function () {
-          it("should throw a " + field + " is required validation error", function () {
+          it("should throw a " + field + " is required and must be a number validation error", function () {
             _assert2.default.throws(function () {
               FinancialCalculator.calculate(validInputExceptMissing(field));
             }, function (err) {
               var validationErrors = JSON.parse(err.message);
               if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
-                return validationError.field === field && validationError.message === "is required.";
+                return validationError.field === field && validationError.message === "is required and must be a number.";
               })) return true;
             }, 'unexpected error');
           });
         });
         describe("not a number", function () {
-          it("should throw a " + field + " is required validation error", function () {
+          it("should throw a " + field + " is required and must be a number validation error", function () {
             _assert2.default.throws(function () {
               FinancialCalculator.calculate(validInputExcept(field, "sansSkeleton"));
             }, function (err) {
               var validationErrors = JSON.parse(err.message);
               if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
-                return validationError.field === field && validationError.message === "is required.";
+                return validationError.field === field && validationError.message === "is required and must be a number.";
               })) return true;
             }, 'unexpected error');
           });
@@ -152,25 +152,25 @@ describe("financial calculator test", function () {
       describe("invalid investmentGrowthRate", function () {
         var field = "investmentGrowthRate";
         describe("missing", function () {
-          it("should throw a " + field + " is required validation error", function () {
+          it("should throw a " + field + " is required and must be a number validation error", function () {
             _assert2.default.throws(function () {
               FinancialCalculator.calculate(validInputExceptMissing(field));
             }, function (err) {
               var validationErrors = JSON.parse(err.message);
               if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
-                return validationError.field === field && validationError.message === "is required.";
+                return validationError.field === field && validationError.message === "is required and must be a number.";
               })) return true;
             }, 'unexpected error');
           });
         });
         describe("not a number", function () {
-          it("should throw a " + field + " is required validation error", function () {
+          it("should throw a " + field + " is required and must be a number validation error", function () {
             _assert2.default.throws(function () {
               FinancialCalculator.calculate(validInputExcept(field, "sansSkeleton"));
             }, function (err) {
               var validationErrors = JSON.parse(err.message);
               if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
-                return validationError.field === field && validationError.message === "is required.";
+                return validationError.field === field && validationError.message === "is required and must be a number.";
               })) return true;
             }, 'unexpected error');
           });
@@ -234,25 +234,25 @@ describe("financial calculator test", function () {
       describe("invalid currentTaxRate", function () {
         var field = "currentTaxRate";
         describe("missing", function () {
-          it("should throw a " + field + " is required validation error", function () {
+          it("should throw a " + field + " is required and must be a number validation error", function () {
             _assert2.default.throws(function () {
               FinancialCalculator.calculate(validInputExceptMissing(field));
             }, function (err) {
               var validationErrors = JSON.parse(err.message);
               if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
-                return validationError.field === field && validationError.message === "is required.";
+                return validationError.field === field && validationError.message === "is required and must be a number.";
               })) return true;
             }, 'unexpected error');
           });
         });
         describe("not a number", function () {
-          it("should throw a " + field + " is required validation error", function () {
+          it("should throw a " + field + " is required and must be a number validation error", function () {
             _assert2.default.throws(function () {
               FinancialCalculator.calculate(validInputExcept(field, "sansSkeleton"));
             }, function (err) {
               var validationErrors = JSON.parse(err.message);
               if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
-                return validationError.field === field && validationError.message === "is required.";
+                return validationError.field === field && validationError.message === "is required and must be a number.";
               })) return true;
             }, 'unexpected error');
           });
@@ -316,25 +316,25 @@ describe("financial calculator test", function () {
       describe("invalid amountInvested", function () {
         var field = "amountInvested";
         describe("missing", function () {
-          it("should throw a " + field + " is required validation error", function () {
+          it("should throw a " + field + " is required and must be a number validation error", function () {
             _assert2.default.throws(function () {
               FinancialCalculator.calculate(validInputExceptMissing(field));
             }, function (err) {
               var validationErrors = JSON.parse(err.message);
               if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
-                return validationError.field === field && validationError.message === "is required.";
+                return validationError.field === field && validationError.message === "is required and must be a number.";
               })) return true;
             }, 'unexpected error');
           });
         });
         describe("not a number", function () {
-          it("should throw a " + field + " is required validation error", function () {
+          it("should throw a " + field + " is required and must be a number validation error", function () {
             _assert2.default.throws(function () {
               FinancialCalculator.calculate(validInputExcept(field, "sansSkeleton"));
             }, function (err) {
               var validationErrors = JSON.parse(err.message);
               if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
-                return validationError.field === field && validationError.message === "is required.";
+                return validationError.field === field && validationError.message === "is required and must be a number.";
               })) return true;
             }, 'unexpected error');
           });
@@ -356,25 +356,25 @@ describe("financial calculator test", function () {
       describe("invalid yearsInvested", function () {
         var field = "yearsInvested";
         describe("missing", function () {
-          it("should throw a " + field + " is required validation error", function () {
+          it("should throw a " + field + " is required and must be a number validation error", function () {
             _assert2.default.throws(function () {
               FinancialCalculator.calculate(validInputExceptMissing(field));
             }, function (err) {
               var validationErrors = JSON.parse(err.message);
               if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
-                return validationError.field === field && validationError.message === "is required.";
+                return validationError.field === field && validationError.message === "is required and must be a number.";
               })) return true;
             }, 'unexpected error');
           });
         });
         describe("not a number", function () {
-          it("should throw a " + field + " is required validation error", function () {
+          it("should throw a " + field + " is required and must be a number validation error", function () {
             _assert2.default.throws(function () {
               FinancialCalculator.calculate(validInputExcept(field, "sansSkeleton"));
             }, function (err) {
               var validationErrors = JSON.parse(err.message);
               if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
-                return validationError.field === field && validationError.message === "is required.";
+                return validationError.field === field && validationError.message === "is required and must be a number.";
               })) return true;
             }, 'unexpected error');
           });

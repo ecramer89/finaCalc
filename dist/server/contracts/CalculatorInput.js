@@ -10,6 +10,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 /**
  * constructor
+ * negative values are accepted for all tax and growth rates and inflation. Some people have 'negative' tax rates if they receive substantial government subsidies.
+ * negative inflation => deflation
+ *
  * @param {number} (or string representation of number) currentTaxRate tax rate expressed as percentage. % okay but not necessary. - values accepted.
  * @param {number} (or string representation of number) amountInvested. Must be positive. $ ok but not necessary.
  * @param {number} (or string representation of number) retirementTaxRate tax rate expressed as percentage. % okay but not necessary. - values accepted.
