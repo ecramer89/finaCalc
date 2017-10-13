@@ -1,8 +1,9 @@
 /*attempts to parse a valid number from input and returns the number or null if no number can be parsed*/
 export function toNumber(value){
   if(typeof(value) === "string"){
-    value=value.replace(/\s+|,|^\$|\$$|%$|^%/g, "")
-    value = value.match("^(-?\\d*\\.?\\d*)$")
+    value=value.replace(/\s+|,|^\$|\$$|%$|^%/g, "") //accept $ or % in valid positions, as well as commas or spaces (both treated as delimiters).
+    //strip these valid characters from input to make the regex checker easier to write.
+    value = value.match("^(-?\\d*\\.?\\d*)$") //after removing valid non numeric characters, does the string represent a valid number?
   }
   const asNumber = Number.parseFloat(value)
   return Number.isFinite(asNumber) ? asNumber : null
@@ -10,6 +11,9 @@ export function toNumber(value){
 
 /*I researched and learned about the exponentiation technique for correctly rounding numbers in Javascript from this blog post:
  * http://www.jacklmoore.com/notes/rounding-in-javascript/
+ * this is necessary because native JS doesn't have a function to round to places and other techniques (such as multiplying/flooring/dividing by 100 or using "toFixed"
+ * don't round up; they always floor to the nearest integer.
+ * as such, values such as 5.6789 rounded to two would become 5.67 instead of 5.68.
  * REQUIRES: places >= 0
 */
 export function roundTo(value, places){

@@ -211,14 +211,34 @@ describe("toNumber", function () {
         });
       });
     });
-    describe("contains dollar sign", function () {
+    describe("contains dollar sign at end", function () {
       it("should return the parsed number as number", function () {
         _assert2.default.ok(Util.toNumber("1233.45$") === 1233.45);
       });
     });
-    describe("contains percent sign", function () {
+    describe("contains percent sign at end", function () {
       it("should return the parsed number as number", function () {
         _assert2.default.ok(Util.toNumber("89.45%") === 89.45);
+      });
+    });
+    describe("contains dollar sign at start", function () {
+      it("should return the parsed number as number", function () {
+        _assert2.default.ok(Util.toNumber("$1233.45") === 1233.45);
+      });
+    });
+    describe("contains percent sign at start", function () {
+      it("should return the parsed number as number", function () {
+        _assert2.default.ok(Util.toNumber("%89.45") === 89.45);
+      });
+    });
+    describe("contains spaces", function () {
+      it("should return the parsed number as number, treating the space as a comma", function () {
+        _assert2.default.ok(Util.toNumber("89   45  45") === 894545);
+      });
+    });
+    describe("contains commas", function () {
+      it("should return the parsed number as number, removing the comma", function () {
+        _assert2.default.ok(Util.toNumber("89,4556,34") === 89455634);
       });
     });
   });
@@ -276,9 +296,49 @@ describe("toNumber", function () {
   });
 
   describe("handles strings that are not numbers", function () {
+    describe("string contains numbers with letters at front", function () {
+      it("should return null", function () {
+        _assert2.default.equal(Util.toNumber("as1234"), null);
+      });
+    });
+    describe("string contains numbers with letters (neither % or $) at end", function () {
+      it("should return null", function () {
+        _assert2.default.equal(Util.toNumber("134xcs"), null);
+      });
+    });
+    describe("string contains numbers with letters embedded", function () {
+      it("should return null", function () {
+        _assert2.default.equal(Util.toNumber("123csx456"), null);
+      });
+    });
+    describe("string contains numbers with special character at front", function () {
+      it("should return null", function () {
+        _assert2.default.equal(Util.toNumber("*&1234"), null);
+      });
+    });
+    describe("string contains numbers with special character (neither % or $) at end", function () {
+      it("should return null", function () {
+        _assert2.default.equal(Util.toNumber("134*x#"), null);
+      });
+    });
+    describe("string contains numbers with special characters embedded", function () {
+      it("should return null", function () {
+        _assert2.default.equal(Util.toNumber("123*#@456"), null);
+      });
+    });
+    describe("string contains numbers with $ in invalid place (middle)", function () {
+      it("should return null", function () {
+        _assert2.default.equal(Util.toNumber("123$56"), null);
+      });
+    });
+    describe("string contains numbers with % in invalid place (middle)", function () {
+      it("should return null", function () {
+        _assert2.default.equal(Util.toNumber("123%56"), null);
+      });
+    });
     describe("string contains no numbers", function () {
       it("should return null", function () {
-        _assert2.default.equal(Util.toNumber("asbdss"), null);
+        _assert2.default.equal(Util.toNumber("asbd*&&$$%ss"), null);
       });
     });
   });

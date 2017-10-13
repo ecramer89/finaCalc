@@ -24,7 +24,7 @@ function validate(input){
     if(!input.hasOwnProperty(field)) continue; //only interested in fields defined on CalculatorInput class.
     const value = input[field]
     if(value === null){ //strict check on null because 0 is allowed.
-      validationErrors.push({field, message: "is required."})
+      validationErrors.push({field, message: "is required and must be a number."})
     }
     else {
       switch(field){

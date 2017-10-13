@@ -32,25 +32,25 @@ describe("financial calculator test", ()=>{
       describe("invalid retirementTaxRate", ()=>{
         const field = "retirementTaxRate"
         describe("missing", ()=>{
-          it(`should throw a ${field} is required validation error`, ()=>{
+          it(`should throw a ${field} is required and must be a number validation error`, ()=>{
             assert.throws(()=>{
                 FinancialCalculator.calculate(validInputExceptMissing(field))
               }, err=>{
                 const validationErrors = JSON.parse(err.message)
                 if(Array.isArray(validationErrors) &&
-                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required.")) return true;
+                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required and must be a number.")) return true;
               },
               'unexpected error')
           })
         })
         describe("not a number", ()=>{
-          it(`should throw a ${field} is required validation error`, ()=>{
+          it(`should throw a ${field} is required and must be a number validation error`, ()=>{
             assert.throws(()=>{
                 FinancialCalculator.calculate(validInputExcept(field, "sansSkeleton"))
               }, err=>{
                 const validationErrors = JSON.parse(err.message)
                 if(Array.isArray(validationErrors) &&
-                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required.")) return true;
+                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required and must be a number.")) return true;
               },
               'unexpected error')
           })
@@ -86,25 +86,25 @@ describe("financial calculator test", ()=>{
       describe("invalid inflationRate", ()=>{
         const field = "inflationRate"
         describe("missing", ()=>{
-          it(`should throw a ${field} is required validation error`, ()=>{
+          it(`should throw a ${field} is required and must be a number validation error`, ()=>{
             assert.throws(()=>{
                 FinancialCalculator.calculate(validInputExceptMissing(field))
               }, err=>{
                 const validationErrors = JSON.parse(err.message)
                 if(Array.isArray(validationErrors) &&
-                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required.")) return true;
+                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required and must be a number.")) return true;
               },
               'unexpected error')
           })
         })
         describe("not a number", ()=>{
-          it(`should throw a ${field} is required validation error`, ()=>{
+          it(`should throw a ${field} is required and must be a number validation error`, ()=>{
             assert.throws(()=>{
                 FinancialCalculator.calculate(validInputExcept(field, "sansSkeleton"))
               }, err=>{
                 const validationErrors = JSON.parse(err.message)
                 if(Array.isArray(validationErrors) &&
-                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required.")) return true;
+                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required and must be a number.")) return true;
               },
               'unexpected error')
           })
@@ -140,25 +140,25 @@ describe("financial calculator test", ()=>{
       describe("invalid investmentGrowthRate", ()=>{
         const field = "investmentGrowthRate"
         describe("missing", ()=>{
-          it(`should throw a ${field} is required validation error`, ()=>{
+          it(`should throw a ${field} is required and must be a number validation error`, ()=>{
             assert.throws(()=>{
                 FinancialCalculator.calculate(validInputExceptMissing(field))
               }, err=>{
                 const validationErrors = JSON.parse(err.message)
                 if(Array.isArray(validationErrors) &&
-                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required.")) return true;
+                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required and must be a number.")) return true;
               },
               'unexpected error')
           })
         })
         describe("not a number", ()=>{
-          it(`should throw a ${field} is required validation error`, ()=>{
+          it(`should throw a ${field} is required and must be a number validation error`, ()=>{
             assert.throws(()=>{
                 FinancialCalculator.calculate(validInputExcept(field, "sansSkeleton"))
               }, err=>{
                 const validationErrors = JSON.parse(err.message)
                 if(Array.isArray(validationErrors) &&
-                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required.")) return true;
+                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required and must be a number.")) return true;
               },
               'unexpected error')
           })
@@ -222,25 +222,25 @@ describe("financial calculator test", ()=>{
       describe("invalid currentTaxRate", ()=>{
         const field = "currentTaxRate"
         describe("missing", ()=>{
-          it(`should throw a ${field} is required validation error`, ()=>{
+          it(`should throw a ${field} is required and must be a number validation error`, ()=>{
             assert.throws(()=>{
               FinancialCalculator.calculate(validInputExceptMissing(field))
             }, err=>{
               const validationErrors = JSON.parse(err.message)
               if(Array.isArray(validationErrors) &&
-                validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required.")) return true;
+                validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required and must be a number.")) return true;
             },
               'unexpected error')
           })
         })
         describe("not a number", ()=>{
-          it(`should throw a ${field} is required validation error`, ()=>{
+          it(`should throw a ${field} is required and must be a number validation error`, ()=>{
             assert.throws(()=>{
                 FinancialCalculator.calculate(validInputExcept(field, "sansSkeleton"))
               }, err=>{
                 const validationErrors = JSON.parse(err.message)
                 if(Array.isArray(validationErrors) &&
-                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required.")) return true;
+                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required and must be a number.")) return true;
               },
               'unexpected error')
           })
@@ -305,25 +305,25 @@ describe("financial calculator test", ()=>{
       describe("invalid amountInvested", ()=>{
         const field = "amountInvested"
         describe("missing", ()=>{
-          it(`should throw a ${field} is required validation error`, ()=>{
+          it(`should throw a ${field} is required and must be a number validation error`, ()=>{
             assert.throws(()=>{
                 FinancialCalculator.calculate(validInputExceptMissing(field))
               }, err=>{
                 const validationErrors = JSON.parse(err.message)
                 if(Array.isArray(validationErrors) &&
-                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required.")) return true;
+                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required and must be a number.")) return true;
               },
               'unexpected error')
           })
         })
         describe("not a number", ()=>{
-          it(`should throw a ${field} is required validation error`, ()=>{
+          it(`should throw a ${field} is required and must be a number validation error`, ()=>{
             assert.throws(()=>{
                 FinancialCalculator.calculate(validInputExcept(field, "sansSkeleton"))
               }, err=>{
                 const validationErrors = JSON.parse(err.message)
                 if(Array.isArray(validationErrors) &&
-                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required.")) return true;
+                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required and must be a number.")) return true;
               },
               'unexpected error')
           })
@@ -345,25 +345,25 @@ describe("financial calculator test", ()=>{
       describe("invalid yearsInvested", ()=>{
         const field = "yearsInvested"
         describe("missing", ()=>{
-          it(`should throw a ${field} is required validation error`, ()=>{
+          it(`should throw a ${field} is required and must be a number validation error`, ()=>{
             assert.throws(()=>{
                 FinancialCalculator.calculate(validInputExceptMissing(field))
               }, err=>{
                 const validationErrors = JSON.parse(err.message)
                 if(Array.isArray(validationErrors) &&
-                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required.")) return true;
+                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required and must be a number.")) return true;
               },
               'unexpected error')
           })
         })
         describe("not a number", ()=>{
-          it(`should throw a ${field} is required validation error`, ()=>{
+          it(`should throw a ${field} is required and must be a number validation error`, ()=>{
             assert.throws(()=>{
                 FinancialCalculator.calculate(validInputExcept(field, "sansSkeleton"))
               }, err=>{
                 const validationErrors = JSON.parse(err.message)
                 if(Array.isArray(validationErrors) &&
-                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required.")) return true;
+                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required and must be a number.")) return true;
               },
               'unexpected error')
           })
