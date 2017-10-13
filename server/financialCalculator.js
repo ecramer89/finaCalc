@@ -81,7 +81,7 @@ export function validate(input){
         case "inflationRate":
         case "investmentGrowthRate":
           if(value < 0 || value > 100) {
-            validationErrors.push({field, message: "must be a valid percentage (between 0 and 100)"})
+            validationErrors.push({field, message: "cannot exceed 100."})
           }
           break;
         case "amountInvested":

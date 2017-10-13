@@ -14,16 +14,6 @@ describe("financial calculator test", ()=>{
     })
 
 
-
-    //each of these should throw a validation error.
-    /*
-    test: negative inputs for rates are okay
-    but no rate can exceed 100
-    years and amount invested cant be negative
-
-
-     currentTaxRate,amountInvested,retirementTaxRate,investmentGrowthRate,inflationRate,yearsInvested
-     */
     function validInputExceptMissing(field){
      return validInputExcept(field, null)
     }
@@ -37,7 +27,169 @@ describe("financial calculator test", ()=>{
     }
 
 
-    describe.only("invalid input", ()=>{
+    describe("invalid input", ()=>{
+
+      describe("invalid retirementTaxRate", ()=>{
+        const field = "retirementTaxRate"
+        describe("missing", ()=>{
+          it(`should throw a ${field} is required validation error`, ()=>{
+            assert.throws(()=>{
+                FinancialCalculator.calculate(validInputExceptMissing(field))
+              }, err=>{
+                const validationErrors = JSON.parse(err.message)
+                if(Array.isArray(validationErrors) &&
+                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required.")) return true;
+              },
+              'unexpected error')
+          })
+        })
+        describe("not a number", ()=>{
+          it(`should throw a ${field} is required validation error`, ()=>{
+            assert.throws(()=>{
+                FinancialCalculator.calculate(validInputExcept(field, "sansSkeleton"))
+              }, err=>{
+                const validationErrors = JSON.parse(err.message)
+                if(Array.isArray(validationErrors) &&
+                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required.")) return true;
+              },
+              'unexpected error')
+          })
+        })
+        describe("exceeds 100", ()=> {
+          describe("by decimal", () => {
+            it(`should throw a ${field} cannot exceed 100 validation error`, () => {
+              assert.throws(() => {
+                  FinancialCalculator.calculate(validInputExcept(field, "100.001"))
+                }, err => {
+                  const validationErrors = JSON.parse(err.message)
+                  if (Array.isArray(validationErrors) &&
+                    validationErrors.find(validationError => validationError.field === field && validationError.message === "cannot exceed 100.")) return true;
+                },
+                'unexpected error')
+            })
+          })
+          describe("by integer", () => {
+            it(`should throw a ${field} cannot exceed 100 validation error`, () => {
+              assert.throws(() => {
+                  FinancialCalculator.calculate(validInputExcept(field, "101"))
+                }, err => {
+                  const validationErrors = JSON.parse(err.message)
+                  if (Array.isArray(validationErrors) &&
+                    validationErrors.find(validationError => validationError.field === field && validationError.message === "cannot exceed 100.")) return true;
+                },
+                'unexpected error')
+            })
+          })
+        })
+      })
+
+      describe("invalid inflationRate", ()=>{
+        const field = "inflationRate"
+        describe("missing", ()=>{
+          it(`should throw a ${field} is required validation error`, ()=>{
+            assert.throws(()=>{
+                FinancialCalculator.calculate(validInputExceptMissing(field))
+              }, err=>{
+                const validationErrors = JSON.parse(err.message)
+                if(Array.isArray(validationErrors) &&
+                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required.")) return true;
+              },
+              'unexpected error')
+          })
+        })
+        describe("not a number", ()=>{
+          it(`should throw a ${field} is required validation error`, ()=>{
+            assert.throws(()=>{
+                FinancialCalculator.calculate(validInputExcept(field, "sansSkeleton"))
+              }, err=>{
+                const validationErrors = JSON.parse(err.message)
+                if(Array.isArray(validationErrors) &&
+                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required.")) return true;
+              },
+              'unexpected error')
+          })
+        })
+        describe("exceeds 100", ()=> {
+          describe("by decimal", () => {
+            it(`should throw a ${field} cannot exceed 100 validation error`, () => {
+              assert.throws(() => {
+                  FinancialCalculator.calculate(validInputExcept(field, "100.001"))
+                }, err => {
+                  const validationErrors = JSON.parse(err.message)
+                  if (Array.isArray(validationErrors) &&
+                    validationErrors.find(validationError => validationError.field === field && validationError.message === "cannot exceed 100.")) return true;
+                },
+                'unexpected error')
+            })
+          })
+          describe("by integer", () => {
+            it(`should throw a ${field} cannot exceed 100 validation error`, () => {
+              assert.throws(() => {
+                  FinancialCalculator.calculate(validInputExcept(field, "101"))
+                }, err => {
+                  const validationErrors = JSON.parse(err.message)
+                  if (Array.isArray(validationErrors) &&
+                    validationErrors.find(validationError => validationError.field === field && validationError.message === "cannot exceed 100.")) return true;
+                },
+                'unexpected error')
+            })
+          })
+        })
+      })
+
+      describe("invalid investmentGrowthRate", ()=>{
+        const field = "investmentGrowthRate"
+        describe("missing", ()=>{
+          it(`should throw a ${field} is required validation error`, ()=>{
+            assert.throws(()=>{
+                FinancialCalculator.calculate(validInputExceptMissing(field))
+              }, err=>{
+                const validationErrors = JSON.parse(err.message)
+                if(Array.isArray(validationErrors) &&
+                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required.")) return true;
+              },
+              'unexpected error')
+          })
+        })
+        describe("not a number", ()=>{
+          it(`should throw a ${field} is required validation error`, ()=>{
+            assert.throws(()=>{
+                FinancialCalculator.calculate(validInputExcept(field, "sansSkeleton"))
+              }, err=>{
+                const validationErrors = JSON.parse(err.message)
+                if(Array.isArray(validationErrors) &&
+                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required.")) return true;
+              },
+              'unexpected error')
+          })
+        })
+        describe("exceeds 100", ()=> {
+          describe("by decimal", () => {
+            it(`should throw a ${field} cannot exceed 100 validation error`, () => {
+              assert.throws(() => {
+                  FinancialCalculator.calculate(validInputExcept(field, "100.001"))
+                }, err => {
+                  const validationErrors = JSON.parse(err.message)
+                  if (Array.isArray(validationErrors) &&
+                    validationErrors.find(validationError => validationError.field === field && validationError.message === "cannot exceed 100.")) return true;
+                },
+                'unexpected error')
+            })
+          })
+          describe("by integer", () => {
+            it(`should throw a ${field} cannot exceed 100 validation error`, () => {
+              assert.throws(() => {
+                  FinancialCalculator.calculate(validInputExcept(field, "101"))
+                }, err => {
+                  const validationErrors = JSON.parse(err.message)
+                  if (Array.isArray(validationErrors) &&
+                    validationErrors.find(validationError => validationError.field === field && validationError.message === "cannot exceed 100.")) return true;
+                },
+                'unexpected error')
+            })
+          })
+        })
+      })
 
       describe("invalid currentTaxRate", ()=>{
         const field = "currentTaxRate"
@@ -63,6 +215,32 @@ describe("financial calculator test", ()=>{
                   validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required.")) return true;
               },
               'unexpected error')
+          })
+        })
+        describe("exceeds 100", ()=> {
+          describe("by decimal", () => {
+            it(`should throw a ${field} cannot exceed 100 validation error`, () => {
+              assert.throws(() => {
+                  FinancialCalculator.calculate(validInputExcept(field, "100.001"))
+                }, err => {
+                  const validationErrors = JSON.parse(err.message)
+                  if (Array.isArray(validationErrors) &&
+                    validationErrors.find(validationError => validationError.field === field && validationError.message === "cannot exceed 100.")) return true;
+                },
+                'unexpected error')
+            })
+          })
+          describe("by integer", () => {
+            it(`should throw a ${field} cannot exceed 100 validation error`, () => {
+              assert.throws(() => {
+                  FinancialCalculator.calculate(validInputExcept(field, "101"))
+                }, err => {
+                  const validationErrors = JSON.parse(err.message)
+                  if (Array.isArray(validationErrors) &&
+                    validationErrors.find(validationError => validationError.field === field && validationError.message === "cannot exceed 100.")) return true;
+                },
+                'unexpected error')
+            })
           })
         })
       })
@@ -97,7 +275,47 @@ describe("financial calculator test", ()=>{
         describe("is negative", ()=>{
           it(`should throw a ${field} cannot be negative validation error.`, ()=>{
             assert.throws(()=>{
-                FinancialCalculator.calculate(validInputExcept(field, -1234.56))
+                FinancialCalculator.calculate(validInputExcept(field, "-1234.56"))
+              }, err=>{
+                const validationErrors = JSON.parse(err.message)
+                if(Array.isArray(validationErrors) &&
+                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "cannot be negative.")) return true;
+              },
+              'unexpected error')
+          })
+        })
+      })
+
+      describe("invalid yearsInvested", ()=>{
+        const field = "yearsInvested"
+        describe("missing", ()=>{
+          it(`should throw a ${field} is required validation error`, ()=>{
+            assert.throws(()=>{
+                FinancialCalculator.calculate(validInputExceptMissing(field))
+              }, err=>{
+                const validationErrors = JSON.parse(err.message)
+                if(Array.isArray(validationErrors) &&
+                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required.")) return true;
+              },
+              'unexpected error')
+          })
+        })
+        describe("not a number", ()=>{
+          it(`should throw a ${field} is required validation error`, ()=>{
+            assert.throws(()=>{
+                FinancialCalculator.calculate(validInputExcept(field, "sansSkeleton"))
+              }, err=>{
+                const validationErrors = JSON.parse(err.message)
+                if(Array.isArray(validationErrors) &&
+                  validationErrors.find(validationError=>validationError.field === field && validationError.message === "is required.")) return true;
+              },
+              'unexpected error')
+          })
+        })
+        describe("is negative", ()=>{
+          it(`should throw a ${field} cannot be negative validation error.`, ()=>{
+            assert.throws(()=>{
+                FinancialCalculator.calculate(validInputExcept(field, "-12"))
               }, err=>{
                 const validationErrors = JSON.parse(err.message)
                 if(Array.isArray(validationErrors) &&
