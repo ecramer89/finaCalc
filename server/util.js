@@ -1,5 +1,9 @@
 /*attempts to parse a valid number from input and returns the number or null if no number can be parsed*/
 export function toNumber(value){
+  if(typeof(value) === "string"){
+    value=value.replace(/\s+|,|^\$|\$$|%$|^%/g, "")
+    value = value.match("^(-?\\d*\\.?\\d*)$")
+  }
   const asNumber = Number.parseFloat(value)
   return Number.isFinite(asNumber) ? asNumber : null
 }

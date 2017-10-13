@@ -204,14 +204,34 @@ describe("toNumber", ()=> {
         })
       })
     })
-    describe("contains dollar sign", ()=>{
+    describe("contains dollar sign at end", ()=>{
       it("should return the parsed number as number", () => {
         assert.ok(Util.toNumber("1233.45$") === 1233.45)
       })
     })
-    describe("contains percent sign", ()=>{
+    describe("contains percent sign at end", ()=>{
       it("should return the parsed number as number", () => {
         assert.ok(Util.toNumber("89.45%") === 89.45)
+      })
+    })
+    describe("contains dollar sign at start", ()=>{
+      it("should return the parsed number as number", () => {
+        assert.ok(Util.toNumber("$1233.45") === 1233.45)
+      })
+    })
+    describe("contains percent sign at start", ()=>{
+      it("should return the parsed number as number", () => {
+        assert.ok(Util.toNumber("%89.45") === 89.45)
+      })
+    })
+    describe("contains spaces", ()=>{
+      it("should return the parsed number as number, treating the space as a comma", () => {
+        assert.ok(Util.toNumber("89   45  45") === 894545)
+      })
+    })
+    describe("contains commas", ()=>{
+      it("should return the parsed number as number, removing the comma", () => {
+        assert.ok(Util.toNumber("89,4556,34") === 89455634)
       })
     })
   })
@@ -269,9 +289,49 @@ describe("toNumber", ()=> {
   })
 
   describe("handles strings that are not numbers", ()=>{
+    describe("string contains numbers with letters at front", ()=>{
+      it("should return null", () => {
+        assert.equal(Util.toNumber("as1234"), null)
+      })
+    })
+    describe("string contains numbers with letters (neither % or $) at end", ()=>{
+      it("should return null", () => {
+        assert.equal(Util.toNumber("134xcs"), null)
+      })
+    })
+    describe("string contains numbers with letters embedded", ()=>{
+      it("should return null", () => {
+        assert.equal(Util.toNumber("123csx456"), null)
+      })
+    })
+    describe("string contains numbers with special character at front", ()=>{
+      it("should return null", () => {
+        assert.equal(Util.toNumber("*&1234"), null)
+      })
+    })
+    describe("string contains numbers with special character (neither % or $) at end", ()=>{
+      it("should return null", () => {
+        assert.equal(Util.toNumber("134*x#"), null)
+      })
+    })
+    describe("string contains numbers with special characters embedded", ()=>{
+      it("should return null", () => {
+        assert.equal(Util.toNumber("123*#@456"), null)
+      })
+    })
+    describe("string contains numbers with $ in invalid place (middle)", ()=>{
+      it("should return null", () => {
+        assert.equal(Util.toNumber("123$56"), null)
+      })
+    })
+    describe("string contains numbers with % in invalid place (middle)", ()=>{
+      it("should return null", () => {
+        assert.equal(Util.toNumber("123%56"), null)
+      })
+    })
     describe("string contains no numbers", ()=>{
       it("should return null", () => {
-        assert.equal(Util.toNumber("asbdss"), null)
+        assert.equal(Util.toNumber("asbd*&&$$%ss"), null)
       })
     })
   })
