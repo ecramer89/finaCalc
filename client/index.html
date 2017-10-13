@@ -88,9 +88,9 @@
 
     const parsePercentage = "1?\\d{0,2}(\\.\\d+)?" //used to parse the number from input provided to the server in the command. may extract empty.
     const parseMonetaryAmount = "\\d*(\\.\\d{1,2})?"//used to parse the number from input provided to the server in the command. may extract empty.
-    const checkPercentageInput = "^(\\.\\d*%?|1?\\d{1,2}(\\.\\d+|\\.?)%?)";//used to validate user input character by character to ensure that the next character does not break the pattern.
+    const checkPercentageInput = "^-?(\\.\\d*%?|1?\\d{1,2}(\\.\\d+|\\.?)%?)";//used to validate user input character by character to ensure that the next character does not break the pattern.
     const checkMonetaryInput = "^(\\.\\d{0,2}\\$?|\\d+(\\$|\\.\\d{1,2}\\$?|\\.?))";//used to validate user input character by character to ensure that the next character does not break the pattern
-    const integerChecker = "\\d+$"
+    const yearsChecker = "\\d+$"
 
     function parseInputWithPattern(input, pattern){
       const matches = input.match(pattern)
@@ -139,7 +139,7 @@
         label: "Years Invested",
         placeholder: "30",
         pattern: "\\d+",
-        inputChecker: integerChecker,
+        inputChecker: yearsChecker,
         description: "The period of the investment, in years."
       }
     }
