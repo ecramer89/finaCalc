@@ -120,6 +120,8 @@
       }
     }
 
+    const resultsFields = ["afterTax","futureValue","amountTaxedOnWithdrawal","afterTaxFutureValue"]
+
     const resultsSummaries = {
       either: "The two accounts break even. You may wish to double-check your estimates of your current and expected retirement income tax brackets.",
       TSFA: "The TSFA would be a better choice for you. Be sure to re-calculate if you extend the investment period or adjust your estimated future tax bracket.",
@@ -171,20 +173,31 @@
     let fieldInputs = null //lazily initialize on first call to calculate.
     //elements aren't mounted to DOM when the script initially executes.
     let fieldDescriptions=null
+    let resultsCells=null
     let calculateButton=null
 
-    function cacheFormElements(){
+    //save references to form elements that need to be frequently retrieved from DOM and manipulated.
+    function cacheElements(){
       fieldInputs = {}
       fieldDescriptions={}
+      resultsCells = {}
+
       for(const field of Object.keys(formFields)){
         fieldInputs[field] = document.getElementById(field)
         fieldDescriptions[field]=document.getElementById(field+"Help")
       }
 
+      resultsFields.forEach(resultField=>{
+        const TSFAresult = `TSFA-${resultField}`
+        const RRSPresult = `RRSP-${resultField}`
+        resultsCells[TSFAresult] = document.getElementById(TSFAresult)
+        resultsCells[RRSPresult] = document.getElementById(RRSPresult)
+      })
+
     }
 
     function calculate() {
-      if (!fieldInputs) cacheFormElements();
+      if (!fieldInputs) cacheElements();
       let params = Object.keys(fieldInputs).reduce(function (acc, fieldName) {
         acc[fieldName] = fieldInputs[fieldName].value
         return acc
@@ -253,7 +266,7 @@
       }
 
       function injectErrorMessageIntoDescription(error){
-        if(!fieldInputs) cacheFormElements()
+        if(!fieldInputs) cacheElements()
         const field = error.field
         const fieldLabel = formFields[field].label
         const fieldDescription = fieldDescriptions[field]
