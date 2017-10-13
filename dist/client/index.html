@@ -198,18 +198,18 @@
 
     function calculate() {
       if (!fieldInputs) cacheElements();
-      let params = Object.keys(fieldInputs).reduce(function (acc, fieldName) {
+      let params = Object.keys(fieldInputs).reduce((acc, fieldName) =>{
         acc[fieldName] = fieldInputs[fieldName].value
         return acc
       }, {});
 
-      let request = new XMLHttpRequest()
+      const request = new XMLHttpRequest()
 
       request.open("POST", calculateURL, true)
       request.setRequestHeader("Accept", "application/json")
       request.setRequestHeader("Content-Type", "application/json")
 
-      request.onreadystatechange = function () {
+      request.onreadystatechange =  ()=>{
         if (request.readyState === XMLHttpRequest.DONE) {
           switch (request.status) {
             case 200:
@@ -246,7 +246,7 @@
 
     function highlightAfterTaxFutureCellFor(betterAccount){
       if(betterAccount == "either") return
-      const resultCell = document.getElementById(betterAccount+"-afterTaxFutureValue")
+      const resultCell = resultsCells[betterAccount+"-afterTaxFutureValue"]
       resultCell.style.backgroundColor="yellow"
     }
 
@@ -259,8 +259,8 @@
         const accountType = accountResultsPanel.id
         const resultsFieldNames=Object.keys(dataForPanel)
         for(const fieldName of resultsFieldNames){
-          const id = accountType+"-"+fieldName
-          const resultCell = document.getElementById(id)
+          const id = `${accountType}-${fieldName}`
+          const resultCell = resultsCells[id]
           resultCell.innerHTML = dataForPanel[fieldName]
         }
       }
