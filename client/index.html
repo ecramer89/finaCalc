@@ -120,7 +120,11 @@
       }
     }
 
-    const resultsFields = ["afterTax","futureValue","amountTaxedOnWithdrawal","afterTaxFutureValue"]
+    const resultsFields = [
+      {field: "afterTax",label: "Deposit After Tax"},
+      {field: "futureValue",label: "Future Value"},
+      {field: "amountTaxedOnWithdrawal",label: "Future Value Total Tax"},
+      {field: "afterTaxFutureValue",label: "Future Value After Tax"}]
 
     const resultsSummaries = {
       either: "The two accounts break even. You may wish to double-check your estimates of your current and expected retirement income tax brackets.",
@@ -132,7 +136,7 @@
 
     function createFormInputFields(){
       const fieldsPerCol = 2;
-      let formContainer = document.getElementById("calculatorForm")
+      const formContainer = document.getElementById("calculatorForm")
       const fieldNames = Object.keys(formFields)
       const numFields = fieldNames.length
       let formGroup = createFormGroup()
@@ -188,8 +192,9 @@
       }
 
       resultsFields.forEach(resultField=>{
-        const TSFAresult = `TSFA-${resultField}`
-        const RRSPresult = `RRSP-${resultField}`
+        const {field} = resultField
+        const TSFAresult = `TSFA-${field}`
+        const RRSPresult = `RRSP-${field}`
         resultsCells[TSFAresult] = document.getElementById(TSFAresult)
         resultsCells[RRSPresult] = document.getElementById(RRSPresult)
       })
@@ -198,7 +203,7 @@
 
     function calculate() {
       if (!fieldInputs) cacheElements();
-      let params = Object.keys(fieldInputs).reduce((acc, fieldName) =>{
+      const params = Object.keys(fieldInputs).reduce((acc, fieldName) =>{
         acc[fieldName] = fieldInputs[fieldName].value
         return acc
       }, {});
@@ -218,7 +223,7 @@
               break;
             case 400:
               const errors = JSON.parse(request.responseText)
-              errors.forEach(function (err) {
+              errors.forEach((err)=>{
                 injectErrorMessageIntoDescription(err)
               })
               break;
@@ -229,13 +234,17 @@
       event.preventDefault()
     }
 
+
+    let resultsPanel = null
+    let TSFAResults = null
+    let RRSPResults = null
       function displayInResultsPanels(data){
-        const resultsPanel = document.getElementById("resultPanel")
+        resultsPanel = resultsPanel || document.getElementById("resultPanel")
         resultsPanel.style.visibility = "visible"
         resultsPanel.style.display = "block"
         const {TSFA, RRSP} = data
-        const TSFAResults = document.getElementById("TSFA")
-        const RRSPResults = document.getElementById("RRSP")
+        TSFAResults = TSFAResults || document.getElementById("TSFA")
+        RRSPResults = RRSPResults || document.getElementById("RRSP")
         displayReturnsForTaxAccount(TSFAResults, TSFA)
         displayReturnsForTaxAccount(RRSPResults, RRSP)
         const comparison = TSFA.afterTaxFutureValue - RRSP.afterTaxFutureValue
@@ -246,16 +255,19 @@
 
     function highlightAfterTaxFutureCellFor(betterAccount){
       if(betterAccount == "either") return
+      if(!fieldInputs) cacheElements()
       const resultCell = resultsCells[betterAccount+"-afterTaxFutureValue"]
       resultCell.style.backgroundColor="yellow"
     }
 
+    let summary = null
     function summarize(betterAccount){
-      const summary = document.getElementById("resultsSummary")
+      summary = summary || document.getElementById("resultsSummary")
       summary.innerText = resultsSummaries[betterAccount]
     }
 
       function displayReturnsForTaxAccount(accountResultsPanel, dataForPanel){
+        if(!fieldInputs) cacheElements()
         const accountType = accountResultsPanel.id
         const resultsFieldNames=Object.keys(dataForPanel)
         for(const fieldName of resultsFieldNames){
