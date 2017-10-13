@@ -196,7 +196,7 @@
       const describedBy = `${field}Help`
       const defaultValue=fieldData.defaultValue || ""
       formGroup.insertAdjacentHTML("beforeEnd", `<label for="${field}">${label}</label>`);
-      formGroup.insertAdjacentHTML("beforeEnd", `<input value="${defaultValue}" type="text" placeholder="${placeholder}" class="input-sm" id="${field}" aria-describedby="${describedBy}" onclick="${"restoreFieldDescriptionToDefault()"}">`);
+      formGroup.insertAdjacentHTML("beforeEnd", `<input value="${defaultValue}" type="text" placeholder="${placeholder}" class="input-sm" id="${field}" aria-describedby="${describedBy}" onclick="${"clearErrorMessageAndInputField()"}">`);
       formGroup.insertAdjacentHTML("beforeEnd",`<small id="${describedBy}" class="form-text text-muted">${description}</small>`)
     }
 
@@ -314,12 +314,13 @@
         applyFieldDescriptionErrorStyle(fieldDescription)
       }
 
-      function restoreFieldDescriptionToDefault(){
+      function clearErrorMessageAndInputField(){
         if(!fieldInputs) cacheElements()
         const field = event.target.id
         const fieldDescription = fieldDescriptions[field]
         fieldDescription.innerText = formFields[field].description
         applyFieldDescriptionNormalStyle(fieldDescription)
+        fieldInputs[field].value=formFields[field].defaultValue || ""
       }
 
 </script>
