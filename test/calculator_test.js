@@ -301,7 +301,6 @@ describe("financial calculator test", ()=>{
         })
       })
 
-
       describe("invalid amountInvested", ()=>{
         const field = "amountInvested"
         describe("missing", ()=>{
