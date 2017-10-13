@@ -86,60 +86,36 @@
 
     const calculateURL = "http://localhost:3000/calculate"
 
-    const parsePercentage = "1?\\d{0,2}(\\.\\d+)?" //used to parse the number from input provided to the server in the command. may extract empty.
-    const parseMonetaryAmount = "\\d*(\\.\\d{1,2})?"//used to parse the number from input provided to the server in the command. may extract empty.
-    const checkPercentageInput = "^\\-?(\\.\\d*%?|1?\\d{1,2}(\\.\\d+|\\.?)%?)";//used to validate user input character by character to ensure that the next character does not break the pattern.
-    const checkMonetaryInput = "^(\\.\\d{0,2}\\$?|\\d+(\\$|\\.\\d{1,2}\\$?|\\.?))";//used to validate user input character by character to ensure that the next character does not break the pattern
-    const yearsChecker = "\\d+$"
-
-    function parseInputWithPattern(input, pattern){
-      const matches = input.match(pattern)
-      return matches ? matches[0] : ""
-    }
-
-
     const formFields = {
       currentTaxRate: {
         label: "Current Marginal Tax Rate",
         placeholder: "15%",
-        pattern: parsePercentage,
-        inputChecker: checkPercentageInput,
         description: "The highest income tax rate that applies to you, based on your current income. Enter as a percentage."
       },
       amountInvested: {
         label: "Deposit Amount",
         placeholder: "1000.00$",
-        pattern: parseMonetaryAmount,
-        inputChecker: checkMonetaryInput,
         description: "This is the amount of money you intend to deposit. Note that although some people spend the tax refund they get on money they deposit into an RRSP, for the purpose of the comparison, we assume that you deposit the refund as well."
       },
       retirementTaxRate: {
         label: "Marginal Tax Rate at Withdrawal",
         placeholder: "5%",
-        pattern: parsePercentage,
-        inputChecker: checkPercentageInput,
         description: "The highest income tax bracket that will apply to you when you withdraw your investment. (This is typically when you're retired). Enter as a percentage."
       },
       investmentGrowthRate: {
         label: "Annual Investment Growth Rate",
         placeholder: "2%",
-        pattern: parsePercentage,
-        inputChecker: checkPercentageInput,
         description: "The annual rate at which your money grows. Be sure to input the nominal rate (i.e., don't adjust for inflation). We'll take care of that for you. Enter as a percentage."
       },
       inflationRate: {
         label: "The Inflation Rate",
         placeholder: "5%",
-        pattern: parsePercentage,
-        inputChecker: checkPercentageInput,
         defaultValue: "2%",
         description: "Estimate the annual inflation rate over your investment period. If you'd like, you can use the default value (2%), which is what the Canadian government strives to maintain."
       },
       yearsInvested: {
         label: "Years Invested",
         placeholder: "30",
-        pattern: "\\d+",
-        inputChecker: yearsChecker,
         description: "The period of the investment, in years."
       }
     }
@@ -189,7 +165,6 @@
       formGroup.insertAdjacentHTML("beforeEnd", '<label for="'+field+'">'+label+'</label>');
       formGroup.insertAdjacentHTML("beforeEnd", '<input value="'+defaultValue+'" type="text" placeholder="'+placeholder+'" class="input-sm" id="'+field+'" aria-describedby="'+describedBy+'" onkeyup="'+"checkAndSaveInputValue()"+'" onclick="'+"restoreFieldDescriptionToDefault()"+'">');
       formGroup.insertAdjacentHTML("beforeEnd",'<small id="'+describedBy+'" class="form-text text-muted">'+description+'</small>')
-
     }
 
 
@@ -211,7 +186,7 @@
     function calculate() {
       if (!fieldInputs) cacheFormElements();
       let params = Object.keys(fieldInputs).reduce(function (acc, fieldName) {
-        acc[fieldName] = parseInputWithPattern(fieldInputs[fieldName].value, formFields[fieldName].pattern)
+        acc[fieldName] = fieldInputs[fieldName].value
         return acc
       }, {});
 
@@ -255,22 +230,6 @@
         highlightAfterTaxFutureCellFor(betterChoice)
         summarize(betterChoice)
       }
-
-      const cachedFormInputValues = {}
-
-      function checkAndSaveInputValue(){
-        if (!fieldInputs) cacheFormElements();
-        const {id : formField, value : updateValue}= event.target
-        const inputChecker = formFields[formField].inputChecker
-        const matches = updateValue.match(inputChecker)
-        if(matches){
-          cachedFormInputValues[formField] = matches[0]
-        }else if(updateValue.length == 0){
-          cachedFormInputValues[formField]="" //allow deletions of the last character
-        }
-        event.target.value = cachedFormInputValues[formField] || ""
-      }
-
 
     function highlightAfterTaxFutureCellFor(betterAccount){
       if(betterAccount == "either") return

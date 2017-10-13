@@ -5,14 +5,13 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.handler = handler;
 exports.calculate = calculate;
-exports.computeRealRateOfReturn = computeRealRateOfReturn;
-exports.computeFutureValue = computeFutureValue;
-exports.composeComputations = composeComputations;
-exports.deductTaxFromAmount = deductTaxFromAmount;
-exports.computeTaxDeducted = computeTaxDeducted;
 exports.computeTSFA = computeTSFA;
 exports.computeRRSP = computeRRSP;
-exports.validate = validate;
+exports.composeResults = composeResults;
+exports.computeRealRateOfReturn = computeRealRateOfReturn;
+exports.computeFutureValue = computeFutureValue;
+exports.deductTaxFromAmount = deductTaxFromAmount;
+exports.computeTaxDeducted = computeTaxDeducted;
 
 var _CalculatorInput = require("./contracts/CalculatorInput");
 
@@ -39,15 +38,49 @@ function calculate(calculatorInput) {
   };
 }
 
-function computeRealRateOfReturn(nominalRateOfReturn, inflationRate) {
-  return (1 + nominalRateOfReturn) / (1 + inflationRate) - 1;
+function validate(input) {
+  var validationErrors = [];
+  for (var field in input) {
+    if (!input.hasOwnProperty(field)) continue; //only interested in fields defined on CalculatorInput class.
+    var value = input[field];
+    if (value === null) {
+      //strict check on null because 0 is allowed.
+      validationErrors.push({ field: field, message: "is required." });
+    } else {
+      switch (field) {
+        case "currentTaxRate":
+        case "retirementTaxRate":
+        case "inflationRate":
+        case "investmentGrowthRate":
+          if (value > 100) {
+            validationErrors.push({ field: field, message: "cannot exceed 100." });
+          }
+          break;
+        case "amountInvested":
+        case "yearsInvested":
+          if (value < 0) {
+            validationErrors.push({ field: field, message: "cannot be negative." });
+          }
+      }
+    }
+  }
+
+  if (validationErrors.length > 0) throw new Error(JSON.stringify(validationErrors));
 }
 
-function computeFutureValue(afterTax, rateOfReturn, yearsInvested) {
-  return afterTax * Math.pow(1 + rateOfReturn, yearsInvested);
+function computeTSFA(input) {
+  return composeResults(input, deductTaxFromAmount, function () {
+    return 0;
+  });
 }
 
-function composeComputations(input, computeAfterTax, computeAmountTaxedOnWithdrawal) {
+function computeRRSP(input) {
+  return composeResults(input, function (amountInvested) {
+    return amountInvested;
+  }, computeTaxDeducted);
+}
+
+function composeResults(input, computeAfterTax, computeAmountTaxedOnWithdrawal) {
   var nominalRateOfReturn = (0, _util.percentageToDecimal)(input.investmentGrowthRate);
   var inflationRate = (0, _util.percentageToDecimal)(input.inflationRate);
   var yearsInvested = input.yearsInvested;
@@ -69,52 +102,35 @@ function composeComputations(input, computeAfterTax, computeAmountTaxedOnWithdra
     afterTaxFutureValue: (0, _util.roundTo)(afterTaxFutureValue, 2)
   };
 }
+/*
+ * @param {number} nominalRateOfReturn expressed as a decimal.
+ * @param {number} inflationRate expressed as a decimal.
+ * */
+function computeRealRateOfReturn(nominalRateOfReturn, inflationRate) {
+  return (1 + nominalRateOfReturn) / (1 + inflationRate) - 1;
+}
 
+/*
+ * @param {number} taxRate expressed as a decimal.
+ * @param {number} rateOfReturn expressed as a decimal
+ * @param {number} years investment period in years.
+ * */
+function computeFutureValue(afterTax, rateOfReturn, yearsInvested) {
+  return afterTax * Math.pow(1 + rateOfReturn, yearsInvested);
+}
+
+/*returns the 'afterTax' value of amount, applying given tax rate
+* @param {number} amount amout of money
+* @param {number} taxRate expressed as a decimal.
+* */
 function deductTaxFromAmount(amount, taxRate) {
   return amount * (1 - taxRate);
 }
 
+/*return the amount of tax that would have to be paid on amount, given taxRate
+ * @param {number} amount amount of money
+ * @param {number} taxRate expressed as a decimal.
+ * */
 function computeTaxDeducted(amount, taxRate) {
   return amount * taxRate;
-}
-
-function computeTSFA(input) {
-  return composeComputations(input, deductTaxFromAmount, function () {
-    return 0;
-  });
-}
-
-function computeRRSP(input) {
-  return composeComputations(input, function (amountInvested) {
-    return amountInvested;
-  }, computeTaxDeducted);
-}
-
-function validate(input) {
-  var validationErrors = [];
-  for (var field in input) {
-    var value = input[field];
-    if (value === null) {
-      //strict check on null because 0 is allowed.
-      validationErrors.push({ field: field, message: "is required." });
-    } else {
-      switch (field) {
-        case "currentTaxRate":
-        case "retirementTaxRate":
-        case "inflationRate":
-        case "investmentGrowthRate":
-          if (value < 0 || value > 100) {
-            validationErrors.push({ field: field, message: "must be a valid percentage (between 0 and 100)" });
-          }
-          break;
-        case "amountInvested":
-        case "yearsInvested":
-          if (value < 0) {
-            validationErrors.push({ field: field, message: "cannot be negative." });
-          }
-      }
-    }
-  }
-
-  if (validationErrors.length > 0) throw new Error(JSON.stringify(validationErrors));
 }
