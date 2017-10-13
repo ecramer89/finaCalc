@@ -329,6 +329,57 @@ describe("financial calculator test", ()=>{
     })
   })
 
+  describe("test deductTaxFromAmount", ()=>{
+    describe("amount is positive", ()=>{
+      const amount = 1234.58
+      describe("tax rate positive", ()=>{
+        describe("all of amount", ()=>{
+          const taxRate=1.0
+          it("should return 0", ()=>{
+            const expected = 0
+            assert.strictEqual(FinancialCalculator.deductTaxFromAmount(amount,taxRate),expected)
+          })
+        })
+        describe("1% of amount", ()=>{
+          const taxRate=.01
+          it("should return 99% of amount", ()=>{
+            const expected = 1222.234
+            assert.ok(compareNumberStrings(expected,()=>FinancialCalculator.deductTaxFromAmount(amount,taxRate)))
+          })
+        })
+        describe("half of amount", ()=>{
+          const taxRate=.5
+          it("should return half of amount", ()=>{
+            const expected = 617.29
+            assert.ok(compareNumberStrings(expected,()=>FinancialCalculator.deductTaxFromAmount(amount,taxRate)))
+          })
+        })
+        describe("handles decimals in tax rate", ()=>{
+          const taxRate=.402
+          it("should return ~59% of amount", ()=>{
+            const expected = 738.27884
+            assert.ok(compareNumberStrings(expected,()=>FinancialCalculator.deductTaxFromAmount(amount,taxRate)))
+          })
+        })
+      })
+      describe("tax rate 0", ()=>{
+        const taxRate=0
+        it("should return amount", ()=>{
+          const expected = amount
+          assert.strictEqual(expected,FinancialCalculator.deductTaxFromAmount(amount,taxRate))
+        })
+      })
+    })
+    describe("amount is 0", ()=>{
+      const amount = 0
+      it("should return 0", ()=>{
+        const expected = 0
+        assert.strictEqual(expected,FinancialCalculator.deductTaxFromAmount(amount,.5))
+      })
+    })
+  })
+
+
   describe("test computeTSFA", ()=>{
 
     const expectedResult = {
@@ -337,9 +388,11 @@ describe("financial calculator test", ()=>{
 
   })
 
+
   describe("test computeRRSP", ()=>{
 
   })
+
 
   /*expected results taken from: http://financeformulas.net/Real_Rate_of_Return.html#calcHeader
    * to accommodate rounding and to keep this test independent of my round function, I test correctness of

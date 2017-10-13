@@ -16,7 +16,6 @@ export default class CalculatorInput{
     this.investmentGrowthRate = toNumber(investmentGrowthRate);
     this.inflationRate = toNumber(inflationRate);
     this.yearsInvested = toNumber(yearsInvested)
-
   }
 }
 
