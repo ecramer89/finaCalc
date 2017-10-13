@@ -19,8 +19,39 @@ describe("financial calculator test", ()=>{
     but no rate can exceed 100
     years and amount invested cant be negative
 
+
+     currentTaxRate,amountInvested,retirementTaxRate,investmentGrowthRate,inflationRate,yearsInvested
      */
-    describe("invalid input", ()=>{
+    function validInputExceptMissing(field){
+      const input = {
+        ...TestData.validInputBreaksEven,
+        field: null
+      }
+
+      return input
+
+    }
+
+
+    describe.only("invalid input", ()=>{
+
+      describe("invalid currentTaxRate", ()=>{
+        const field = "currentTaxRate"
+        describe("missing", ()=>{
+          it("should throw a currentTaxRate is required validation error", ()=>{
+            assert.throws(()=>{
+              FinancialCalculator.calculate(validInputExceptMissing(field))
+            }, err=>{
+              const message = JSON.parse(err)
+              if(message && message.find(validationError=>validationError.field === field && validationError.message === "is required.")) return true;
+            }, 'unexpected error')
+          })
+        })
+        describe("not a number", ()=>{
+
+        })
+
+      })
 
     })
 
