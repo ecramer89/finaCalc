@@ -39,6 +39,13 @@ function validate(input){
     else {
       switch(field){
         case "currentTaxRate":
+          if(value === 100) {
+            validationErrors.push({field, message: "cannot be 100% because then you would have no after-tax to invest in the TSFA."})
+          }
+          if(Math.abs(value) > 100) {
+            validationErrors.push({field, message: "cannot exceed 100."})
+          }
+          break;
         case "retirementTaxRate":
         case "inflationRate":
         case "investmentGrowthRate":

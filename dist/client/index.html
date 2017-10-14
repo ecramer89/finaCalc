@@ -64,12 +64,12 @@
 <script>
 
     const calculateURL = "http://localhost:3000/calculate"
-
+    //map required server inputs to presentation data used to create the corresponding input element for the field.
     const formFields = {
       currentTaxRate: {
-        label: "Current Marginal Tax Rate",
-        placeholder: "15%",
-        description: "The highest income tax rate that applies to you, based on your current income. Enter as a percentage."
+        label: "Current Marginal Tax Rate", //text that appears on input element's label
+        placeholder: "15%", //placeholder value for field
+        description: "The highest income tax rate that applies to you, based on your current income. Enter as a percentage." //text for the input element's description
       },
       amountInvested: {
         label: "Deposit Amount",
@@ -99,6 +99,7 @@
       }
     }
 
+    //map of server result data fields to data used to create the elements that show the result
     const resultsFields = [
       {field: "afterTax",label: "Deposit After Tax"},
       {field: "futureValue",label: "Future Value"},
@@ -106,6 +107,8 @@
       {field: "afterTaxFutureValue",label: "Future Value After Tax"}
       ]
 
+    //summary text that is injected into the summary panel after user makes successful request.
+    //specific text that is used depends on which account was the better choice, based on user inputs
     const resultsSummaries = {
       either: "The two accounts break even. You may wish to double-check your estimates of your current and expected retirement income tax brackets.",
       TSFA: "The TSFA would be a better choice for you. Be sure to re-calculate if you extend the investment period or adjust your estimated future tax bracket.",
@@ -123,7 +126,8 @@
     let RRSPResults = null
     let summary = null
 
-    //field description changes style dynamically to show error messages; save style objects here for easy edits.
+    /*helper functions that encapsulate logic needed to apply frequently-toggled style changes to the field description
+    * and to the cells that show the future value after tax for the two accountsx*/
     function applyFieldDescriptionNormalStyle(fieldDescriptionElement){
       fieldDescriptionElement.style.backgroundColor="white"
       fieldDescriptionElement.style.fontWeight="normal"
@@ -143,25 +147,47 @@
     createFormInputFields()
     createResultsCells()
 
+    //dynamically create form input fields using data in formFields map
     function createFormInputFields(){
       const fieldsPerCol = 2;
       const formContainer = document.getElementById("calculatorForm")
       const fieldNames = Object.keys(formFields)
       const numFields = fieldNames.length
-      let formGroup = createFormGroup()
-      formContainer.appendChild(formGroup)
-      let currFormGroup = 0
+      let formColumn = createFormColumn() //one column in the grid-like form
+      formContainer.appendChild(formColumn)
+      let currentColumn = 0
 
       for(let i = 0; i< numFields;i++){
-         const forFormGroup = Math.floor(i/fieldsPerCol)
-            if(forFormGroup != currFormGroup){
-              formGroup = createFormGroup()
-              formContainer.appendChild(formGroup)
-              currFormGroup = forFormGroup
+         const addToColumn = Math.floor(i/fieldsPerCol) //determine which column the field should occupy
+            if(addToColumn != currentColumn){ //just overflowed the current column, time to change to the next column
+              formColumn = createFormColumn()
+              formContainer.appendChild(formColumn)
+              currentColumn = addToColumn
             }
-        createAndAddFormFieldToFormGroup(formGroup, fieldNames[i])
+        createAndAddFormFieldToFormColumn(formColumn, fieldNames[i])
       }
+      //insert the submit button
       formContainer.insertAdjacentHTML("afterEnd",'<div class="row"><button type="submit" class="btn btn-primary btn-sm disabled" id="calculateButton">Calculate</button></div>')
+    }
+
+    //produces a form group column for arranging form input fields
+    function createFormColumn(){
+      const formGroup = document.createElement("div")
+      formGroup.className+="col form-group"
+      return formGroup
+    }
+
+    //creates a label, input and description for the given field and then adds to the given input field column.
+    function createAndAddFormFieldToFormColumn(formColumn, field){
+      const fieldData = formFields[field]
+      const label = fieldData.label
+      const placeholder= fieldData.placeholder
+      const description= fieldData.description
+      const describedBy = `${field}Help`
+      const defaultValue=fieldData.defaultValue || ""
+      formColumn.insertAdjacentHTML("beforeEnd", `<label for="${field}">${label}</label>`);
+      formColumn.insertAdjacentHTML("beforeEnd", `<input value="${defaultValue}" type="text" placeholder="${placeholder}" class="input-sm" id="${field}" aria-describedby="${describedBy}" onclick="${"clearErrorMessageAndInputField()"}">`);
+      formColumn.insertAdjacentHTML("beforeEnd",`<small id="${describedBy}" class="form-text text-muted">${description}</small>`)
     }
 
     function createResultsCells(){
@@ -182,25 +208,8 @@
 
     }
 
-    function createFormGroup(){
-      let formGroup = document.createElement("div")
-      formGroup.className+="col form-group"
-      return formGroup
-    }
-
-    function createAndAddFormFieldToFormGroup(formGroup, field){
-      const fieldData = formFields[field]
-      const label = fieldData.label
-      const placeholder= fieldData.placeholder
-      const description= fieldData.description
-      const describedBy = `${field}Help`
-      const defaultValue=fieldData.defaultValue || ""
-      formGroup.insertAdjacentHTML("beforeEnd", `<label for="${field}">${label}</label>`);
-      formGroup.insertAdjacentHTML("beforeEnd", `<input value="${defaultValue}" type="text" placeholder="${placeholder}" class="input-sm" id="${field}" aria-describedby="${describedBy}" onclick="${"clearErrorMessageAndInputField()"}">`);
-      formGroup.insertAdjacentHTML("beforeEnd",`<small id="${describedBy}" class="form-text text-muted">${description}</small>`)
-    }
-
-
+    //retrieve and save references to frequently accessed DOM elements (so that do not need to constantly re fetch using
+    //get element by id)
     function cacheElements(){
       fieldInputs = {}
       fieldDescriptions={}
@@ -221,8 +230,10 @@
 
     }
 
+    //ask server to calculate results based on current input values.
     function calculate() {
       if (!fieldInputs) cacheElements();
+      //get input values from input fields
       const params = Object.keys(fieldInputs).reduce((acc, fieldName) =>{
         acc[fieldName] = fieldInputs[fieldName].value
         return acc
@@ -254,15 +265,18 @@
       event.preventDefault()
     }
 
+    //show user the data that the server returned by injecting it into the results panel.
       function displayInResultsPanels(data){
         resultsPanel = resultsPanel || document.getElementById("resultPanel")
         TSFAResults = TSFAResults || document.getElementById("TSFA")
         RRSPResults = RRSPResults || document.getElementById("RRSP")
+        //show otherwise hidden results panel
         resultsPanel.style.visibility = "visible"
         resultsPanel.style.display = "inline"
         const {TSFA, RRSP} = data
         displayReturnsForTaxAccount(TSFAResults, TSFA)
         displayReturnsForTaxAccount(RRSPResults, RRSP)
+        //figure out which account yields better future value after tax
         const comparison = TSFA.afterTaxFutureValue - RRSP.afterTaxFutureValue
         const betterAccount = comparison == 0 ? "either" : (comparison >  0 ?  "TSFA" : "RRSP")
         highlightAfterTaxFutureCellFor(betterAccount)
@@ -289,11 +303,14 @@
       }
     }
 
+    //inject a short text summary of results into thesummary panel
     function summarize(betterAccount){
       summary = summary || document.getElementById("resultsSummary")
       summary.innerText = resultsSummaries[betterAccount]
     }
 
+    //populates different results cells with corresponding value from data
+    //for the given account results panel
       function displayReturnsForTaxAccount(accountResultsPanel, dataForPanel){
         if(!fieldInputs) cacheElements()
         const accountType = accountResultsPanel.id
@@ -305,6 +322,7 @@
         }
       }
 
+      //replace the field description text with the server error message explaining what was wrong about the last inputted value
       function injectErrorMessageIntoDescription(error){
         if(!fieldInputs) cacheElements()
         const field = error.field
@@ -314,6 +332,7 @@
         applyFieldDescriptionErrorStyle(fieldDescription)
       }
 
+      //restore the helper text to the field description and clear the old value from input field
       function clearErrorMessageAndInputField(){
         if(!fieldInputs) cacheElements()
         const field = event.target.id
