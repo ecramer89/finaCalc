@@ -10,6 +10,9 @@ export function handler(req, res){
   }
 }
 
+/*
+  @param {CalculatorInput} input
+ */
 export function calculate(calculatorInput){
   validate(calculatorInput)
   return {
@@ -18,6 +21,9 @@ export function calculate(calculatorInput){
   }
 }
 
+/*
+@param {CalculatorInput} input
+ */
 function validate(input){
   const validationErrors = []
   for(const field in input){
@@ -49,14 +55,25 @@ function validate(input){
 
 }
 
+/*
+ @param {CalculatorInput} input
+ */
 export function computeTSFA(input){
   return composeResults(input, deductTaxFromAmount, ()=>0)
 }
 
+/*
+ @param {CalculatorInput} input
+ */
 export function computeRRSP(input){
   return composeResults(input, (amountInvested)=>amountInvested, computeTaxDeducted)
 }
 
+/*
+ @param {CalculatorInput} input
+ @param {function(number, number)=>number} computeAfterTax
+ @param {function(number, number)=>number} computeAmountTaxedOnWithdrawal
+ */
 export function composeResults(input, computeAfterTax, computeAmountTaxedOnWithdrawal){
   const nominalRateOfReturn = percentageToDecimal(input.investmentGrowthRate)
   const inflationRate = percentageToDecimal(input.inflationRate)

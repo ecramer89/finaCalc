@@ -7,9 +7,20 @@ import * as TestData from "./testData"
 describe("financial calculator test", ()=>{
   describe("test calculate", ()=>{
 
-
-    //each of these should result in the expected outcomes
     describe("valid input", ()=>{
+
+      describe("TSFA is better choice", ()=>{
+
+      })
+
+      describe("RRSP is better choice", ()=>{
+
+      })
+
+
+      describe("Break even", ()=>{
+
+      })
 
     })
 
@@ -434,29 +445,14 @@ describe("financial calculator test", ()=>{
     })
   })
 
-
-  describe("test computeTSFA", ()=>{
-
-    const expectedResult = {
-
-    }
-
-  })
-
-
-  describe("test computeRRSP", ()=>{
-
-  })
-
-
   /*expected results taken from: http://financeformulas.net/Real_Rate_of_Return.html#calcHeader
    * to accommodate rounding and to keep this test independent of my round function, I test correctness of
    * returned value by comparing substrings of the stringified representations of numeric result.
    * */
   function compareNumberStrings(expectedNumber, resultGenerator){
-      const expectedAsString = (''+expectedNumber)
-      const resultSubstring = (''+resultGenerator()).slice(0,expectedAsString.length)
-      return resultSubstring === expectedAsString
+    const expectedAsString = (''+expectedNumber)
+    const resultSubstring = (''+resultGenerator()).slice(0,expectedAsString.length)
+    return resultSubstring === expectedAsString
   }
 
 
