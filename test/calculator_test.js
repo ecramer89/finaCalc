@@ -1,25 +1,300 @@
 import * as FinancialCalculator from "../server/financialCalculator"
 import CalculatorInput from "../server/contracts/CalculatorInput"
+import CalculatorOutput, {AccountResults} from "../server/contracts/CalculatorOutput"
+import {roundTo} from "../server/util"
 
 import assert from 'assert'
 import * as TestData from "./testData"
 
+/*expected results taken from: http://financeformulas.net/Real_Rate_of_Return.html#calcHeader
+ * to accommodate rounding and to keep this test independent of my round function, I test correctness of
+ * returned value by comparing substrings of the stringified representations of numeric result.
+ * */
+function compareNumberStrings(expectedNumber, resultGenerator){
+  const expectedAsString = (''+expectedNumber)
+  const resultSubstring = (''+resultGenerator()).slice(0,expectedAsString.length)
+  return resultSubstring === expectedAsString
+}
+
 describe("financial calculator test", ()=>{
   describe("test calculate", ()=>{
 
-    describe("valid input", ()=>{
+    describe.only("valid input", ()=>{
 
-      describe("TSFA is better choice", ()=>{
+      describe("RRSP is the better choice", ()=>{
+        const currentTaxRate = 40.34
+        const amountInvested = 1225.45
+        const retirementTaxRate = 20.12
+        const investmentGrowthRate = 5
+        const inflationRate = 2
+        const yearsInvested = 35
+
+        //stringify to better atch conditions of input coming in from server
+        const input = {
+          currentTaxRate: `${currentTaxRate}%`,
+          amountInvested: `${amountInvested}$`,
+          retirementTaxRate: `${retirementTaxRate}%`,
+          investmentGrowthRate: `${investmentGrowthRate}%`,
+          inflationRate: `${inflationRate}%`,
+          yearsInvested: `${yearsInvested}`
+        }
+
+        //compute derived fields up here, for ease of reference.
+
+        /*
+          I assumed that the server should leave anything that is used as input to a subsequent equation
+          unrounded, and then round all the data to show to the client at the end.
+          (i.e., computed deposit value is a result but also input to the future value calculation,
+          which is input to the withdrawal tax calculation, etc. although I round the future value that is returned to user,
+          but left unrounded when provided as input to withdrawal tax calculation.
+         */
+        const realRateOfReturn = (1+(investmentGrowthRate/100))/(1+(inflationRate/100)) - 1;
+        const expectedRRSPAfterTaxUnrounded = amountInvested/(1 - (currentTaxRate/100))
+        const expectedRRSPFutureValueUnrounded = expectedRRSPAfterTaxUnrounded * Math.pow(1 + realRateOfReturn, yearsInvested)
+        const expectedTSFAFutureValueUnrounded = amountInvested * Math.pow(1 + realRateOfReturn, yearsInvested)
+        const expectedRRSPAmountTaxedUnrounded = expectedRRSPFutureValueUnrounded * retirementTaxRate/100 //retirement tax rate
+        const expectedRRSPAfterTaxFutureValueUnrounded = expectedRRSPFutureValueUnrounded * (1 - retirementTaxRate/100)
+        const result = FinancialCalculator.calculate(new CalculatorInput(input))
+
+
+        it("should return a CalculatorOutput", ()=>{
+          assert.ok(result instanceof CalculatorOutput)
+        })
+
+        it("should have an AccountResult for the TSFA", ()=>{
+          assert.ok(result.TSFA instanceof AccountResults)
+        })
+
+        it("should have an AccountResult for the RRSP", ()=>{
+          assert.ok(result.RRSP instanceof AccountResults)
+        })
+
+        it("the after tax deposited for the TSFA should equal the amount invested", ()=>{
+          assert.strictEqual(result.TSFA.afterTax, amountInvested)
+        })
+
+        it("the after tax deposited for the RRSP should be correct",()=>{
+            assert.strictEqual(result.RRSP.afterTax, roundTo(expectedRRSPAfterTaxUnrounded,2))
+        })
+
+        it("the after tax deposited for the RRSP should be such that the deposit minus the refund," +
+          "\ngiven the current tax rate, equals the TSFA deposit", ()=>{
+          const {afterTax: RRSPAfterTax} = result.RRSP
+          const RRSPRefund = RRSPAfterTax * currentTaxRate/100
+          const outOfPocketCost = RRSPAfterTax - RRSPRefund
+          assert.strictEqual(roundTo(outOfPocketCost, 2), result.TSFA.afterTax)
+        })
+
+        it("the future value of the RRSP is correct", ()=>{
+          assert.strictEqual(result.RRSP.futureValue, roundTo(expectedRRSPFutureValueUnrounded,2))
+        })
+
+        it("the future value of the TSFA is correct", ()=>{
+          assert.strictEqual(result.TSFA.futureValue, roundTo(expectedTSFAFutureValueUnrounded,2))
+        })
+
+        it("the amount taxed on withdrawal for the TSFA should be 0", ()=>{
+            assert.strictEqual(result.TSFA.amountTaxedOnWithdrawal, 0)
+        })
+
+        it("the amount taxed on withdrawal for the RRSP should be the future value times the retirement tax rate", ()=>{
+          assert.strictEqual(result.RRSP.amountTaxedOnWithdrawal, roundTo(expectedRRSPAmountTaxedUnrounded,2))
+        })
+
+        it("the after tax future value for the TSFA should equal the future value (since withdrawals are not taxed)", ()=>{
+          assert.strictEqual(result.TSFA.futureValue, result.TSFA.afterTaxFutureValue)
+        })
+
+        it("the after tax future value of the RRSP should match expected", ()=>{
+          assert.strictEqual(result.RRSP.afterTaxFutureValue, roundTo(expectedRRSPAfterTaxFutureValueUnrounded,2))
+        })
+
+        //check consistency with other results
+        it("the after tax future value for the RRSP should equal its future value minus the amount that was taxed", ()=>{
+           assert.strictEqual(result.RRSP.afterTaxFutureValue, result.RRSP.futureValue - result.RRSP.amountTaxedOnWithdrawal)
+        })
+
+        it("since the tax rate on withdrawal is less than the tax rate on deposit, the RRSP future value should exceed the TSFA", ()=>{
+           assert.ok(result.RRSP.afterTaxFutureValue > result.TSFA.afterTaxFutureValue)
+        })
 
       })
 
-      describe("RRSP is better choice", ()=>{
+      describe("TSFA is the better choice", ()=>{
+        const currentTaxRate = 15.21
+        const amountInvested = 1225.45
+        const retirementTaxRate = 26.23
+        const investmentGrowthRate = 5
+        const inflationRate = 2
+        const yearsInvested = 10
 
+        const input = {
+          currentTaxRate: `${currentTaxRate}%`,
+          amountInvested: `${amountInvested}$`,
+          retirementTaxRate: `${retirementTaxRate}%`,
+          investmentGrowthRate: `${investmentGrowthRate}%`,
+          inflationRate: `${inflationRate}%`,
+          yearsInvested: `${yearsInvested}`
+        }
+
+        const realRateOfReturn = (1+(investmentGrowthRate/100))/(1+(inflationRate/100)) - 1;
+        const expectedRRSPAfterTaxUnrounded = amountInvested/(1 - (currentTaxRate/100))
+        const expectedRRSPFutureValueUnrounded = expectedRRSPAfterTaxUnrounded * Math.pow(1 + realRateOfReturn, yearsInvested)
+        const expectedTSFAFutureValueUnrounded = amountInvested * Math.pow(1 + realRateOfReturn, yearsInvested)
+        const expectedRRSPAmountTaxedUnrounded = expectedRRSPFutureValueUnrounded * retirementTaxRate/100 //retirement tax rate
+        const expectedRRSPAfterTaxFutureValueUnrounded = expectedRRSPFutureValueUnrounded * (1 - retirementTaxRate/100)
+        const result = FinancialCalculator.calculate(new CalculatorInput(input))
+
+
+        it("should return a CalculatorOutput", ()=>{
+          assert.ok(result instanceof CalculatorOutput)
+        })
+
+        it("should have an AccountResult for the TSFA", ()=>{
+          assert.ok(result.TSFA instanceof AccountResults)
+        })
+
+        it("should have an AccountResult for the RRSP", ()=>{
+          assert.ok(result.RRSP instanceof AccountResults)
+        })
+
+        it("the after tax deposited for the TSFA should equal the amount invested", ()=>{
+          assert.strictEqual(result.TSFA.afterTax, amountInvested)
+        })
+
+        it("the after tax deposited for the RRSP should be correct",()=>{
+          assert.strictEqual(result.RRSP.afterTax, roundTo(expectedRRSPAfterTaxUnrounded,2))
+        })
+
+        it("the after tax deposited for the RRSP should be such that the deposit minus the refund," +
+          "\ngiven the current tax rate, equals the TSFA deposit", ()=>{
+          const {afterTax: RRSPAfterTax} = result.RRSP
+          const RRSPRefund = RRSPAfterTax * currentTaxRate/100
+          const outOfPocketCost = RRSPAfterTax - RRSPRefund
+          assert.strictEqual(roundTo(outOfPocketCost, 2), result.TSFA.afterTax)
+        })
+
+        it("the future value of the RRSP is correct", ()=>{
+          assert.strictEqual(result.RRSP.futureValue, roundTo(expectedRRSPFutureValueUnrounded,2))
+        })
+
+        it("the future value of the TSFA is correct", ()=>{
+          assert.strictEqual(result.TSFA.futureValue, roundTo(expectedTSFAFutureValueUnrounded,2))
+        })
+
+        it("the amount taxed on withdrawal for the TSFA should be 0", ()=>{
+          assert.strictEqual(result.TSFA.amountTaxedOnWithdrawal, 0)
+        })
+
+        it("the amount taxed on withdrawal for the RRSP should be the future value times the retirement tax rate", ()=>{
+          assert.strictEqual(result.RRSP.amountTaxedOnWithdrawal, roundTo(expectedRRSPAmountTaxedUnrounded,2))
+        })
+
+        it("the after tax future value for the TSFA should equal the future value (since withdrawals are not taxed)", ()=>{
+          assert.strictEqual(result.TSFA.futureValue, result.TSFA.afterTaxFutureValue)
+        })
+
+        it("the after tax future value of the RRSP should match expected", ()=>{
+          assert.strictEqual(result.RRSP.afterTaxFutureValue, roundTo(expectedRRSPAfterTaxFutureValueUnrounded,2))
+        })
+
+        //check consistency with other results
+        it("the after tax future value for the RRSP should equal its future value minus the amount that was taxed", ()=>{
+          assert.strictEqual(result.RRSP.afterTaxFutureValue, result.RRSP.futureValue - result.RRSP.amountTaxedOnWithdrawal)
+        })
+
+        it("since the tax rate on withdrawal is greater than the tax rate on deposit, the TSFA future value should exceed the RRSP", ()=>{
+          assert.ok(result.RRSP.afterTaxFutureValue < result.TSFA.afterTaxFutureValue)
+        })
       })
 
 
-      describe("Break even", ()=>{
+      describe("both are equally good", ()=>{
+        const currentTaxRate = 6.78
+        const amountInvested = 1225.45
+        const retirementTaxRate = 6.78
+        const investmentGrowthRate = 5
+        const inflationRate = 2
+        const yearsInvested = 10
 
+        const input = {
+          currentTaxRate: `${currentTaxRate}%`,
+          amountInvested: `${amountInvested}$`,
+          retirementTaxRate: `${retirementTaxRate}%`,
+          investmentGrowthRate: `${investmentGrowthRate}%`,
+          inflationRate: `${inflationRate}%`,
+          yearsInvested: `${yearsInvested}`
+        }
+
+        const realRateOfReturn = (1+(investmentGrowthRate/100))/(1+(inflationRate/100)) - 1;
+        const expectedRRSPAfterTaxUnrounded = amountInvested/(1 - (currentTaxRate/100))
+        const expectedRRSPFutureValueUnrounded = expectedRRSPAfterTaxUnrounded * Math.pow(1 + realRateOfReturn, yearsInvested)
+        const expectedTSFAFutureValueUnrounded = amountInvested * Math.pow(1 + realRateOfReturn, yearsInvested)
+        const expectedRRSPAmountTaxedUnrounded = expectedRRSPFutureValueUnrounded * retirementTaxRate/100 //retirement tax rate
+        const expectedRRSPAfterTaxFutureValueUnrounded = expectedRRSPFutureValueUnrounded * (1 - retirementTaxRate/100)
+        const result = FinancialCalculator.calculate(new CalculatorInput(input))
+
+
+        it("should return a CalculatorOutput", ()=>{
+          assert.ok(result instanceof CalculatorOutput)
+        })
+
+        it("should have an AccountResult for the TSFA", ()=>{
+          assert.ok(result.TSFA instanceof AccountResults)
+        })
+
+        it("should have an AccountResult for the RRSP", ()=>{
+          assert.ok(result.RRSP instanceof AccountResults)
+        })
+
+        it("the after tax deposited for the TSFA should equal the amount invested", ()=>{
+          assert.strictEqual(result.TSFA.afterTax, amountInvested)
+        })
+
+        it("the after tax deposited for the RRSP should be correct",()=>{
+          assert.strictEqual(result.RRSP.afterTax, roundTo(expectedRRSPAfterTaxUnrounded,2))
+        })
+
+        it("the after tax deposited for the RRSP should be such that the deposit minus the refund," +
+          "\ngiven the current tax rate, equals the TSFA deposit", ()=>{
+          const {afterTax: RRSPAfterTax} = result.RRSP
+          const RRSPRefund = RRSPAfterTax * currentTaxRate/100
+          const outOfPocketCost = RRSPAfterTax - RRSPRefund
+          assert.strictEqual(roundTo(outOfPocketCost, 2), result.TSFA.afterTax)
+        })
+
+        it("the future value of the RRSP is correct", ()=>{
+          assert.strictEqual(result.RRSP.futureValue, roundTo(expectedRRSPFutureValueUnrounded,2))
+        })
+
+        it("the future value of the TSFA is correct", ()=>{
+          assert.strictEqual(result.TSFA.futureValue, roundTo(expectedTSFAFutureValueUnrounded,2))
+        })
+
+        it("the amount taxed on withdrawal for the TSFA should be 0", ()=>{
+          assert.strictEqual(result.TSFA.amountTaxedOnWithdrawal, 0)
+        })
+
+        it("the amount taxed on withdrawal for the RRSP should be the future value times the retirement tax rate", ()=>{
+          assert.strictEqual(result.RRSP.amountTaxedOnWithdrawal, roundTo(expectedRRSPAmountTaxedUnrounded,2))
+        })
+
+        it("the after tax future value for the TSFA should equal the future value (since withdrawals are not taxed)", ()=>{
+          assert.strictEqual(result.TSFA.futureValue, result.TSFA.afterTaxFutureValue)
+        })
+
+        it("the after tax future value of the RRSP should match expected", ()=>{
+          assert.strictEqual(result.RRSP.afterTaxFutureValue, roundTo(expectedRRSPAfterTaxFutureValueUnrounded,2))
+        })
+
+        //check consistency with other results
+        it("the after tax future value for the RRSP should equal its future value minus the amount that was taxed", ()=>{
+          assert.strictEqual(result.RRSP.afterTaxFutureValue, result.RRSP.futureValue - result.RRSP.amountTaxedOnWithdrawal)
+        })
+
+        it("since the tax rate on withdrawal equals the tax rate on deposit, the TSFA future value should equal the RRSP", ()=>{
+          assert.strictEqual(result.RRSP.afterTaxFutureValue, result.TSFA.afterTaxFutureValue)
+        })
       })
 
     })
@@ -394,68 +669,6 @@ describe("financial calculator test", ()=>{
 
     })
   })
-
-  describe("test deductTaxFromAmount", ()=>{
-    describe("amount is positive", ()=>{
-      const amount = 1234.58
-      describe("tax rate positive", ()=>{
-        describe("all of amount", ()=>{
-          const taxRate=1.0
-          it("should return 0", ()=>{
-            const expected = 0
-            assert.strictEqual(FinancialCalculator.deductTaxFromAmount(amount,taxRate),expected)
-          })
-        })
-        describe("1% of amount", ()=>{
-          const taxRate=.01
-          it("should return 99% of amount", ()=>{
-            const expected = 1222.234
-            assert.ok(compareNumberStrings(expected,()=>FinancialCalculator.deductTaxFromAmount(amount,taxRate)))
-          })
-        })
-        describe("half of amount", ()=>{
-          const taxRate=.5
-          it("should return half of amount", ()=>{
-            const expected = 617.29
-            assert.ok(compareNumberStrings(expected,()=>FinancialCalculator.deductTaxFromAmount(amount,taxRate)))
-          })
-        })
-        describe("handles decimals in tax rate", ()=>{
-          const taxRate=.402
-          it("should return ~59% of amount", ()=>{
-            const expected = 738.27884
-            assert.ok(compareNumberStrings(expected,()=>FinancialCalculator.deductTaxFromAmount(amount,taxRate)))
-          })
-        })
-      })
-      describe("tax rate 0", ()=>{
-        const taxRate=0
-        it("should return amount", ()=>{
-          const expected = amount
-          assert.strictEqual(expected,FinancialCalculator.deductTaxFromAmount(amount,taxRate))
-        })
-      })
-    })
-    describe("amount is 0", ()=>{
-      const amount = 0
-      it("should return 0", ()=>{
-        const expected = 0
-        assert.strictEqual(expected,FinancialCalculator.deductTaxFromAmount(amount,.5))
-      })
-    })
-  })
-
-  /*expected results taken from: http://financeformulas.net/Real_Rate_of_Return.html#calcHeader
-   * to accommodate rounding and to keep this test independent of my round function, I test correctness of
-   * returned value by comparing substrings of the stringified representations of numeric result.
-   * */
-  function compareNumberStrings(expectedNumber, resultGenerator){
-    const expectedAsString = (''+expectedNumber)
-    const resultSubstring = (''+resultGenerator()).slice(0,expectedAsString.length)
-    return resultSubstring === expectedAsString
-  }
-
-
   describe("test computeRealRateOfReturn", ()=>{
 
     describe("nominal is 0", ()=>{

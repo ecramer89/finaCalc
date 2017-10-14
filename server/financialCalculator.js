@@ -1,10 +1,11 @@
 import CalculatorInput from "./contracts/CalculatorInput"
-import {roundTo,percentageToDecimal} from "./util"
+import CalculatorOutput from "./contracts/CalculatorOutput"
+import {roundTo} from "./util"
 
 export function handler(req, res){
   try {
     const result = calculate(new CalculatorInput(req.body))
-    res.send(result)
+    res.send(result) //may cause an error if we iterate over-- a class?
   }catch(error){
       res.status(400).send(error.message)
   }
@@ -15,10 +16,10 @@ export function handler(req, res){
  */
 export function calculate(calculatorInput){
   validate(calculatorInput)
-  return {
+  return new CalculatorOutput({
     TSFA: computeTSFA(calculatorInput),
     RRSP: computeRRSP(calculatorInput)
-  }
+  })
 }
 
 /*
@@ -59,14 +60,16 @@ function validate(input){
  @param {CalculatorInput} input
  */
 export function computeTSFA(input){
-  return composeResults(input, deductTaxFromAmount, ()=>0)
+  return composeResults(input, (amountInvested)=>amountInvested, ()=>0)
 }
 
 /*
  @param {CalculatorInput} input
  */
 export function computeRRSP(input){
-  return composeResults(input, (amountInvested)=>amountInvested, computeTaxDeducted)
+  return composeResults(input,
+    (amountInvested, taxRate)=>amountInvested/(1-taxRate),
+    (amount, taxRate)=>amount * taxRate)
 }
 
 /*
@@ -75,20 +78,20 @@ export function computeRRSP(input){
  @param {function(number, number)=>number} computeAmountTaxedOnWithdrawal
  */
 export function composeResults(input, computeAfterTax, computeAmountTaxedOnWithdrawal){
-  const nominalRateOfReturn = percentageToDecimal(input.investmentGrowthRate)
-  const inflationRate = percentageToDecimal(input.inflationRate)
-  const yearsInvested = input.yearsInvested
+  const nominalRateOfReturn = input.investmentGrowthRate/100
+  const inflationRate = input.inflationRate/100
 
-  const afterTax = computeAfterTax(input.amountInvested, percentageToDecimal(input.currentTaxRate))
+  const afterTax = computeAfterTax(input.amountInvested, input.currentTaxRate/100)
 
   const rateOfReturn = computeRealRateOfReturn(nominalRateOfReturn, inflationRate)
 
-  const futureValue = computeFutureValue(afterTax, rateOfReturn, yearsInvested)
+  const futureValue = computeFutureValue(afterTax, rateOfReturn, input.yearsInvested)
 
-  const amountTaxedOnWithdrawal = computeAmountTaxedOnWithdrawal(futureValue,percentageToDecimal(input.retirementTaxRate))
+  const amountTaxedOnWithdrawal = computeAmountTaxedOnWithdrawal(futureValue,input.retirementTaxRate/100)
 
   const afterTaxFutureValue = futureValue - amountTaxedOnWithdrawal
 
+  //all computations done internally on unrounded values; results rounded at end for reporting to user at end of investment period.
   return {
     afterTax: roundTo(afterTax, 2),
     futureValue: roundTo(futureValue, 2),
@@ -113,21 +116,6 @@ export function computeFutureValue(afterTax,rateOfReturn,yearsInvested){
   return afterTax * Math.pow((1 + rateOfReturn), yearsInvested);
 }
 
-/*returns the 'afterTax' value of amount, applying given tax rate
-* @param {number} amount amout of money
-* @param {number} taxRate expressed as a decimal.
-* */
-export function deductTaxFromAmount(amount, taxRate){
-  return amount * (1 - taxRate)
-}
-
-/*return the amount of tax that would have to be paid on amount, given taxRate
- * @param {number} amount amount of money
- * @param {number} taxRate expressed as a decimal.
- * */
-export function computeTaxDeducted(amount, taxRate){
-  return amount * taxRate
-}
 
 
 
