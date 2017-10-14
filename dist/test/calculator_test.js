@@ -1,7 +1,5 @@
 "use strict";
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
 var _financialCalculator = require("../server/financialCalculator");
 
 var FinancialCalculator = _interopRequireWildcard(_financialCalculator);
@@ -22,13 +20,9 @@ var _assert2 = _interopRequireDefault(_assert);
 
 var _testData = require("./testData");
 
-var TestData = _interopRequireWildcard(_testData);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 /*expected results taken from: http://financeformulas.net/Real_Rate_of_Return.html#calcHeader
  * to accommodate rounding and to keep this test independent of my round function, I test correctness of
@@ -43,7 +37,7 @@ function compareNumberStrings(expectedNumber, resultGenerator) {
 describe("financial calculator test", function () {
   describe("test calculate", function () {
 
-    describe.only("valid input", function () {
+    describe("valid input", function () {
 
       describe("RRSP is the better choice", function () {
         var currentTaxRate = 40.34;
@@ -53,7 +47,7 @@ describe("financial calculator test", function () {
         var inflationRate = 2;
         var yearsInvested = 35;
 
-        //stringify to better atch conditions of input coming in from server
+        //stringify to better match conditions of input coming in from client
         var input = {
           currentTaxRate: currentTaxRate + "%",
           amountInvested: amountInvested + "$",
@@ -316,15 +310,6 @@ describe("financial calculator test", function () {
       });
     });
 
-    function validInputExceptMissing(field) {
-      return validInputExcept(field, null);
-    }
-
-    function validInputExcept(field, badValue) {
-      var input = _extends({}, TestData.validInputBreaksEven, _defineProperty({}, field, badValue));
-      return new _CalculatorInput2.default(input);
-    }
-
     describe("invalid input", function () {
 
       describe("invalid retirementTaxRate", function () {
@@ -332,7 +317,7 @@ describe("financial calculator test", function () {
         describe("missing", function () {
           it("should throw a " + field + " is required and must be a number validation error", function () {
             _assert2.default.throws(function () {
-              FinancialCalculator.calculate(validInputExceptMissing(field));
+              FinancialCalculator.calculate((0, _testData.validInputExceptMissing)(field));
             }, function (err) {
               var validationErrors = JSON.parse(err.message);
               if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
@@ -344,7 +329,7 @@ describe("financial calculator test", function () {
         describe("not a number", function () {
           it("should throw a " + field + " is required and must be a number validation error", function () {
             _assert2.default.throws(function () {
-              FinancialCalculator.calculate(validInputExcept(field, "sansSkeleton"));
+              FinancialCalculator.calculate((0, _testData.validInputExcept)(field, "sansSkeleton"));
             }, function (err) {
               var validationErrors = JSON.parse(err.message);
               if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
@@ -357,7 +342,7 @@ describe("financial calculator test", function () {
           describe("by decimal", function () {
             it("should throw a " + field + " cannot exceed 100 validation error", function () {
               _assert2.default.throws(function () {
-                FinancialCalculator.calculate(validInputExcept(field, "100.001"));
+                FinancialCalculator.calculate((0, _testData.validInputExcept)(field, "100.001"));
               }, function (err) {
                 var validationErrors = JSON.parse(err.message);
                 if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
@@ -369,7 +354,7 @@ describe("financial calculator test", function () {
           describe("by integer", function () {
             it("should throw a " + field + " cannot exceed 100 validation error", function () {
               _assert2.default.throws(function () {
-                FinancialCalculator.calculate(validInputExcept(field, "101"));
+                FinancialCalculator.calculate((0, _testData.validInputExcept)(field, "101"));
               }, function (err) {
                 var validationErrors = JSON.parse(err.message);
                 if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
@@ -386,7 +371,7 @@ describe("financial calculator test", function () {
         describe("missing", function () {
           it("should throw a " + field + " is required and must be a number validation error", function () {
             _assert2.default.throws(function () {
-              FinancialCalculator.calculate(validInputExceptMissing(field));
+              FinancialCalculator.calculate((0, _testData.validInputExceptMissing)(field));
             }, function (err) {
               var validationErrors = JSON.parse(err.message);
               if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
@@ -398,7 +383,7 @@ describe("financial calculator test", function () {
         describe("not a number", function () {
           it("should throw a " + field + " is required and must be a number validation error", function () {
             _assert2.default.throws(function () {
-              FinancialCalculator.calculate(validInputExcept(field, "sansSkeleton"));
+              FinancialCalculator.calculate((0, _testData.validInputExcept)(field, "sansSkeleton"));
             }, function (err) {
               var validationErrors = JSON.parse(err.message);
               if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
@@ -411,7 +396,7 @@ describe("financial calculator test", function () {
           describe("by decimal", function () {
             it("should throw a " + field + " cannot exceed 100 validation error", function () {
               _assert2.default.throws(function () {
-                FinancialCalculator.calculate(validInputExcept(field, "100.001"));
+                FinancialCalculator.calculate((0, _testData.validInputExcept)(field, "100.001"));
               }, function (err) {
                 var validationErrors = JSON.parse(err.message);
                 if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
@@ -423,7 +408,7 @@ describe("financial calculator test", function () {
           describe("by integer", function () {
             it("should throw a " + field + " cannot exceed 100 validation error", function () {
               _assert2.default.throws(function () {
-                FinancialCalculator.calculate(validInputExcept(field, "101"));
+                FinancialCalculator.calculate((0, _testData.validInputExcept)(field, "101"));
               }, function (err) {
                 var validationErrors = JSON.parse(err.message);
                 if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
@@ -440,7 +425,7 @@ describe("financial calculator test", function () {
         describe("missing", function () {
           it("should throw a " + field + " is required and must be a number validation error", function () {
             _assert2.default.throws(function () {
-              FinancialCalculator.calculate(validInputExceptMissing(field));
+              FinancialCalculator.calculate((0, _testData.validInputExceptMissing)(field));
             }, function (err) {
               var validationErrors = JSON.parse(err.message);
               if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
@@ -452,7 +437,7 @@ describe("financial calculator test", function () {
         describe("not a number", function () {
           it("should throw a " + field + " is required and must be a number validation error", function () {
             _assert2.default.throws(function () {
-              FinancialCalculator.calculate(validInputExcept(field, "sansSkeleton"));
+              FinancialCalculator.calculate((0, _testData.validInputExcept)(field, "sansSkeleton"));
             }, function (err) {
               var validationErrors = JSON.parse(err.message);
               if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
@@ -466,7 +451,7 @@ describe("financial calculator test", function () {
             describe("by decimal", function () {
               it("should throw a " + field + " cannot exceed 100 validation error", function () {
                 _assert2.default.throws(function () {
-                  FinancialCalculator.calculate(validInputExcept(field, "100.001"));
+                  FinancialCalculator.calculate((0, _testData.validInputExcept)(field, "100.001"));
                 }, function (err) {
                   var validationErrors = JSON.parse(err.message);
                   if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
@@ -478,7 +463,7 @@ describe("financial calculator test", function () {
             describe("by integer", function () {
               it("should throw a " + field + " cannot exceed 100 validation error", function () {
                 _assert2.default.throws(function () {
-                  FinancialCalculator.calculate(validInputExcept(field, "101"));
+                  FinancialCalculator.calculate((0, _testData.validInputExcept)(field, "101"));
                 }, function (err) {
                   var validationErrors = JSON.parse(err.message);
                   if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
@@ -492,7 +477,7 @@ describe("financial calculator test", function () {
             describe("by decimal", function () {
               it("should throw a " + field + " cannot exceed 100 validation error", function () {
                 _assert2.default.throws(function () {
-                  FinancialCalculator.calculate(validInputExcept(field, "-100.001"));
+                  FinancialCalculator.calculate((0, _testData.validInputExcept)(field, "-100.001"));
                 }, function (err) {
                   var validationErrors = JSON.parse(err.message);
                   if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
@@ -504,7 +489,7 @@ describe("financial calculator test", function () {
             describe("by integer", function () {
               it("should throw a " + field + " cannot exceed 100 validation error", function () {
                 _assert2.default.throws(function () {
-                  FinancialCalculator.calculate(validInputExcept(field, "-101"));
+                  FinancialCalculator.calculate((0, _testData.validInputExcept)(field, "-101"));
                 }, function (err) {
                   var validationErrors = JSON.parse(err.message);
                   if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
@@ -522,7 +507,7 @@ describe("financial calculator test", function () {
         describe("missing", function () {
           it("should throw a " + field + " is required and must be a number validation error", function () {
             _assert2.default.throws(function () {
-              FinancialCalculator.calculate(validInputExceptMissing(field));
+              FinancialCalculator.calculate((0, _testData.validInputExceptMissing)(field));
             }, function (err) {
               var validationErrors = JSON.parse(err.message);
               if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
@@ -534,7 +519,7 @@ describe("financial calculator test", function () {
         describe("not a number", function () {
           it("should throw a " + field + " is required and must be a number validation error", function () {
             _assert2.default.throws(function () {
-              FinancialCalculator.calculate(validInputExcept(field, "sansSkeleton"));
+              FinancialCalculator.calculate((0, _testData.validInputExcept)(field, "sansSkeleton"));
             }, function (err) {
               var validationErrors = JSON.parse(err.message);
               if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
@@ -548,7 +533,7 @@ describe("financial calculator test", function () {
             describe("by decimal", function () {
               it("should throw a " + field + " cannot exceed 100 validation error", function () {
                 _assert2.default.throws(function () {
-                  FinancialCalculator.calculate(validInputExcept(field, "100.001"));
+                  FinancialCalculator.calculate((0, _testData.validInputExcept)(field, "100.001"));
                 }, function (err) {
                   var validationErrors = JSON.parse(err.message);
                   if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
@@ -560,7 +545,7 @@ describe("financial calculator test", function () {
             describe("by integer", function () {
               it("should throw a " + field + " cannot exceed 100 validation error", function () {
                 _assert2.default.throws(function () {
-                  FinancialCalculator.calculate(validInputExcept(field, "101"));
+                  FinancialCalculator.calculate((0, _testData.validInputExcept)(field, "101"));
                 }, function (err) {
                   var validationErrors = JSON.parse(err.message);
                   if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
@@ -574,7 +559,7 @@ describe("financial calculator test", function () {
             describe("by decimal", function () {
               it("should throw a " + field + " cannot exceed 100 validation error", function () {
                 _assert2.default.throws(function () {
-                  FinancialCalculator.calculate(validInputExcept(field, "-100.001"));
+                  FinancialCalculator.calculate((0, _testData.validInputExcept)(field, "-100.001"));
                 }, function (err) {
                   var validationErrors = JSON.parse(err.message);
                   if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
@@ -586,7 +571,7 @@ describe("financial calculator test", function () {
             describe("by integer", function () {
               it("should throw a " + field + " cannot exceed 100 validation error", function () {
                 _assert2.default.throws(function () {
-                  FinancialCalculator.calculate(validInputExcept(field, "-101"));
+                  FinancialCalculator.calculate((0, _testData.validInputExcept)(field, "-101"));
                 }, function (err) {
                   var validationErrors = JSON.parse(err.message);
                   if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
@@ -604,7 +589,7 @@ describe("financial calculator test", function () {
         describe("missing", function () {
           it("should throw a " + field + " is required and must be a number validation error", function () {
             _assert2.default.throws(function () {
-              FinancialCalculator.calculate(validInputExceptMissing(field));
+              FinancialCalculator.calculate((0, _testData.validInputExceptMissing)(field));
             }, function (err) {
               var validationErrors = JSON.parse(err.message);
               if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
@@ -616,7 +601,7 @@ describe("financial calculator test", function () {
         describe("not a number", function () {
           it("should throw a " + field + " is required and must be a number validation error", function () {
             _assert2.default.throws(function () {
-              FinancialCalculator.calculate(validInputExcept(field, "sansSkeleton"));
+              FinancialCalculator.calculate((0, _testData.validInputExcept)(field, "sansSkeleton"));
             }, function (err) {
               var validationErrors = JSON.parse(err.message);
               if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
@@ -628,7 +613,7 @@ describe("financial calculator test", function () {
         describe("is negative", function () {
           it("should throw a " + field + " cannot be negative validation error.", function () {
             _assert2.default.throws(function () {
-              FinancialCalculator.calculate(validInputExcept(field, "-1234.56"));
+              FinancialCalculator.calculate((0, _testData.validInputExcept)(field, "-1234.56"));
             }, function (err) {
               var validationErrors = JSON.parse(err.message);
               if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
@@ -644,7 +629,7 @@ describe("financial calculator test", function () {
         describe("missing", function () {
           it("should throw a " + field + " is required and must be a number validation error", function () {
             _assert2.default.throws(function () {
-              FinancialCalculator.calculate(validInputExceptMissing(field));
+              FinancialCalculator.calculate((0, _testData.validInputExceptMissing)(field));
             }, function (err) {
               var validationErrors = JSON.parse(err.message);
               if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
@@ -656,7 +641,7 @@ describe("financial calculator test", function () {
         describe("not a number", function () {
           it("should throw a " + field + " is required and must be a number validation error", function () {
             _assert2.default.throws(function () {
-              FinancialCalculator.calculate(validInputExcept(field, "sansSkeleton"));
+              FinancialCalculator.calculate((0, _testData.validInputExcept)(field, "sansSkeleton"));
             }, function (err) {
               var validationErrors = JSON.parse(err.message);
               if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
@@ -668,7 +653,7 @@ describe("financial calculator test", function () {
         describe("is negative", function () {
           it("should throw a " + field + " cannot be negative validation error.", function () {
             _assert2.default.throws(function () {
-              FinancialCalculator.calculate(validInputExcept(field, "-12"));
+              FinancialCalculator.calculate((0, _testData.validInputExcept)(field, "-12"));
             }, function (err) {
               var validationErrors = JSON.parse(err.message);
               if (Array.isArray(validationErrors) && validationErrors.find(function (validationError) {
