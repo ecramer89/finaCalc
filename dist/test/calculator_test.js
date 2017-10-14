@@ -10,6 +10,12 @@ var _CalculatorInput = require("../server/contracts/CalculatorInput");
 
 var _CalculatorInput2 = _interopRequireDefault(_CalculatorInput);
 
+var _CalculatorOutput = require("../server/contracts/CalculatorOutput");
+
+var _CalculatorOutput2 = _interopRequireDefault(_CalculatorOutput);
+
+var _util = require("../server/util");
+
 var _assert = require("assert");
 
 var _assert2 = _interopRequireDefault(_assert);
@@ -24,11 +30,291 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
+/*expected results taken from: http://financeformulas.net/Real_Rate_of_Return.html#calcHeader
+ * to accommodate rounding and to keep this test independent of my round function, I test correctness of
+ * returned value by comparing substrings of the stringified representations of numeric result.
+ * */
+function compareNumberStrings(expectedNumber, resultGenerator) {
+  var expectedAsString = '' + expectedNumber;
+  var resultSubstring = ('' + resultGenerator()).slice(0, expectedAsString.length);
+  return resultSubstring === expectedAsString;
+}
+
 describe("financial calculator test", function () {
   describe("test calculate", function () {
 
-    //each of these should result in the expected outcomes
-    describe("valid input", function () {});
+    describe.only("valid input", function () {
+
+      describe("RRSP is the better choice", function () {
+        var currentTaxRate = 40.34;
+        var amountInvested = 1225.45;
+        var retirementTaxRate = 20.12;
+        var investmentGrowthRate = 5;
+        var inflationRate = 2;
+        var yearsInvested = 35;
+
+        //stringify to better atch conditions of input coming in from server
+        var input = {
+          currentTaxRate: currentTaxRate + "%",
+          amountInvested: amountInvested + "$",
+          retirementTaxRate: retirementTaxRate + "%",
+          investmentGrowthRate: investmentGrowthRate + "%",
+          inflationRate: inflationRate + "%",
+          yearsInvested: "" + yearsInvested
+
+          //compute derived fields up here, for ease of reference.
+
+          /*
+            I assumed that the server should leave anything that is used as input to a subsequent equation
+            unrounded, and then round all the data to show to the client at the end.
+            (i.e., computed deposit value is a result but also input to the future value calculation,
+            which is input to the withdrawal tax calculation, etc. although I round the future value that is returned to user,
+            but left unrounded when provided as input to withdrawal tax calculation.
+           */
+        };var realRateOfReturn = (1 + investmentGrowthRate / 100) / (1 + inflationRate / 100) - 1;
+        var expectedRRSPAfterTaxUnrounded = amountInvested / (1 - currentTaxRate / 100);
+        var expectedRRSPFutureValueUnrounded = expectedRRSPAfterTaxUnrounded * Math.pow(1 + realRateOfReturn, yearsInvested);
+        var expectedTSFAFutureValueUnrounded = amountInvested * Math.pow(1 + realRateOfReturn, yearsInvested);
+        var expectedRRSPAmountTaxedUnrounded = expectedRRSPFutureValueUnrounded * retirementTaxRate / 100; //retirement tax rate
+        var expectedRRSPAfterTaxFutureValueUnrounded = expectedRRSPFutureValueUnrounded * (1 - retirementTaxRate / 100);
+        var result = FinancialCalculator.calculate(new _CalculatorInput2.default(input));
+
+        it("should return a CalculatorOutput", function () {
+          _assert2.default.ok(result instanceof _CalculatorOutput2.default);
+        });
+
+        it("should have an AccountResult for the TSFA", function () {
+          _assert2.default.ok(result.TSFA instanceof _CalculatorOutput.AccountResults);
+        });
+
+        it("should have an AccountResult for the RRSP", function () {
+          _assert2.default.ok(result.RRSP instanceof _CalculatorOutput.AccountResults);
+        });
+
+        it("the after tax deposited for the TSFA should equal the amount invested", function () {
+          _assert2.default.strictEqual(result.TSFA.afterTax, amountInvested);
+        });
+
+        it("the after tax deposited for the RRSP should be correct", function () {
+          _assert2.default.strictEqual(result.RRSP.afterTax, (0, _util.roundTo)(expectedRRSPAfterTaxUnrounded, 2));
+        });
+
+        it("the after tax deposited for the RRSP should be such that the deposit minus the refund," + "\ngiven the current tax rate, equals the TSFA deposit", function () {
+          var RRSPAfterTax = result.RRSP.afterTax;
+
+          var RRSPRefund = RRSPAfterTax * currentTaxRate / 100;
+          var outOfPocketCost = RRSPAfterTax - RRSPRefund;
+          _assert2.default.strictEqual((0, _util.roundTo)(outOfPocketCost, 2), result.TSFA.afterTax);
+        });
+
+        it("the future value of the RRSP is correct", function () {
+          _assert2.default.strictEqual(result.RRSP.futureValue, (0, _util.roundTo)(expectedRRSPFutureValueUnrounded, 2));
+        });
+
+        it("the future value of the TSFA is correct", function () {
+          _assert2.default.strictEqual(result.TSFA.futureValue, (0, _util.roundTo)(expectedTSFAFutureValueUnrounded, 2));
+        });
+
+        it("the amount taxed on withdrawal for the TSFA should be 0", function () {
+          _assert2.default.strictEqual(result.TSFA.amountTaxedOnWithdrawal, 0);
+        });
+
+        it("the amount taxed on withdrawal for the RRSP should be the future value times the retirement tax rate", function () {
+          _assert2.default.strictEqual(result.RRSP.amountTaxedOnWithdrawal, (0, _util.roundTo)(expectedRRSPAmountTaxedUnrounded, 2));
+        });
+
+        it("the after tax future value for the TSFA should equal the future value (since withdrawals are not taxed)", function () {
+          _assert2.default.strictEqual(result.TSFA.futureValue, result.TSFA.afterTaxFutureValue);
+        });
+
+        it("the after tax future value of the RRSP should match expected", function () {
+          _assert2.default.strictEqual(result.RRSP.afterTaxFutureValue, (0, _util.roundTo)(expectedRRSPAfterTaxFutureValueUnrounded, 2));
+        });
+
+        //check consistency with other results
+        it("the after tax future value for the RRSP should equal its future value minus the amount that was taxed", function () {
+          _assert2.default.strictEqual(result.RRSP.afterTaxFutureValue, result.RRSP.futureValue - result.RRSP.amountTaxedOnWithdrawal);
+        });
+
+        it("since the tax rate on withdrawal is less than the tax rate on deposit, the RRSP future value should exceed the TSFA", function () {
+          _assert2.default.ok(result.RRSP.afterTaxFutureValue > result.TSFA.afterTaxFutureValue);
+        });
+      });
+
+      describe("TSFA is the better choice", function () {
+        var currentTaxRate = 15.21;
+        var amountInvested = 1225.45;
+        var retirementTaxRate = 26.23;
+        var investmentGrowthRate = 5;
+        var inflationRate = 2;
+        var yearsInvested = 10;
+
+        var input = {
+          currentTaxRate: currentTaxRate + "%",
+          amountInvested: amountInvested + "$",
+          retirementTaxRate: retirementTaxRate + "%",
+          investmentGrowthRate: investmentGrowthRate + "%",
+          inflationRate: inflationRate + "%",
+          yearsInvested: "" + yearsInvested
+        };
+
+        var realRateOfReturn = (1 + investmentGrowthRate / 100) / (1 + inflationRate / 100) - 1;
+        var expectedRRSPAfterTaxUnrounded = amountInvested / (1 - currentTaxRate / 100);
+        var expectedRRSPFutureValueUnrounded = expectedRRSPAfterTaxUnrounded * Math.pow(1 + realRateOfReturn, yearsInvested);
+        var expectedTSFAFutureValueUnrounded = amountInvested * Math.pow(1 + realRateOfReturn, yearsInvested);
+        var expectedRRSPAmountTaxedUnrounded = expectedRRSPFutureValueUnrounded * retirementTaxRate / 100; //retirement tax rate
+        var expectedRRSPAfterTaxFutureValueUnrounded = expectedRRSPFutureValueUnrounded * (1 - retirementTaxRate / 100);
+        var result = FinancialCalculator.calculate(new _CalculatorInput2.default(input));
+
+        it("should return a CalculatorOutput", function () {
+          _assert2.default.ok(result instanceof _CalculatorOutput2.default);
+        });
+
+        it("should have an AccountResult for the TSFA", function () {
+          _assert2.default.ok(result.TSFA instanceof _CalculatorOutput.AccountResults);
+        });
+
+        it("should have an AccountResult for the RRSP", function () {
+          _assert2.default.ok(result.RRSP instanceof _CalculatorOutput.AccountResults);
+        });
+
+        it("the after tax deposited for the TSFA should equal the amount invested", function () {
+          _assert2.default.strictEqual(result.TSFA.afterTax, amountInvested);
+        });
+
+        it("the after tax deposited for the RRSP should be correct", function () {
+          _assert2.default.strictEqual(result.RRSP.afterTax, (0, _util.roundTo)(expectedRRSPAfterTaxUnrounded, 2));
+        });
+
+        it("the after tax deposited for the RRSP should be such that the deposit minus the refund," + "\ngiven the current tax rate, equals the TSFA deposit", function () {
+          var RRSPAfterTax = result.RRSP.afterTax;
+
+          var RRSPRefund = RRSPAfterTax * currentTaxRate / 100;
+          var outOfPocketCost = RRSPAfterTax - RRSPRefund;
+          _assert2.default.strictEqual((0, _util.roundTo)(outOfPocketCost, 2), result.TSFA.afterTax);
+        });
+
+        it("the future value of the RRSP is correct", function () {
+          _assert2.default.strictEqual(result.RRSP.futureValue, (0, _util.roundTo)(expectedRRSPFutureValueUnrounded, 2));
+        });
+
+        it("the future value of the TSFA is correct", function () {
+          _assert2.default.strictEqual(result.TSFA.futureValue, (0, _util.roundTo)(expectedTSFAFutureValueUnrounded, 2));
+        });
+
+        it("the amount taxed on withdrawal for the TSFA should be 0", function () {
+          _assert2.default.strictEqual(result.TSFA.amountTaxedOnWithdrawal, 0);
+        });
+
+        it("the amount taxed on withdrawal for the RRSP should be the future value times the retirement tax rate", function () {
+          _assert2.default.strictEqual(result.RRSP.amountTaxedOnWithdrawal, (0, _util.roundTo)(expectedRRSPAmountTaxedUnrounded, 2));
+        });
+
+        it("the after tax future value for the TSFA should equal the future value (since withdrawals are not taxed)", function () {
+          _assert2.default.strictEqual(result.TSFA.futureValue, result.TSFA.afterTaxFutureValue);
+        });
+
+        it("the after tax future value of the RRSP should match expected", function () {
+          _assert2.default.strictEqual(result.RRSP.afterTaxFutureValue, (0, _util.roundTo)(expectedRRSPAfterTaxFutureValueUnrounded, 2));
+        });
+
+        //check consistency with other results
+        it("the after tax future value for the RRSP should equal its future value minus the amount that was taxed", function () {
+          _assert2.default.strictEqual(result.RRSP.afterTaxFutureValue, result.RRSP.futureValue - result.RRSP.amountTaxedOnWithdrawal);
+        });
+
+        it("since the tax rate on withdrawal is greater than the tax rate on deposit, the TSFA future value should exceed the RRSP", function () {
+          _assert2.default.ok(result.RRSP.afterTaxFutureValue < result.TSFA.afterTaxFutureValue);
+        });
+      });
+
+      describe("both are equally good", function () {
+        var currentTaxRate = 6.78;
+        var amountInvested = 1225.45;
+        var retirementTaxRate = 6.78;
+        var investmentGrowthRate = 5;
+        var inflationRate = 2;
+        var yearsInvested = 10;
+
+        var input = {
+          currentTaxRate: currentTaxRate + "%",
+          amountInvested: amountInvested + "$",
+          retirementTaxRate: retirementTaxRate + "%",
+          investmentGrowthRate: investmentGrowthRate + "%",
+          inflationRate: inflationRate + "%",
+          yearsInvested: "" + yearsInvested
+        };
+
+        var realRateOfReturn = (1 + investmentGrowthRate / 100) / (1 + inflationRate / 100) - 1;
+        var expectedRRSPAfterTaxUnrounded = amountInvested / (1 - currentTaxRate / 100);
+        var expectedRRSPFutureValueUnrounded = expectedRRSPAfterTaxUnrounded * Math.pow(1 + realRateOfReturn, yearsInvested);
+        var expectedTSFAFutureValueUnrounded = amountInvested * Math.pow(1 + realRateOfReturn, yearsInvested);
+        var expectedRRSPAmountTaxedUnrounded = expectedRRSPFutureValueUnrounded * retirementTaxRate / 100; //retirement tax rate
+        var expectedRRSPAfterTaxFutureValueUnrounded = expectedRRSPFutureValueUnrounded * (1 - retirementTaxRate / 100);
+        var result = FinancialCalculator.calculate(new _CalculatorInput2.default(input));
+
+        it("should return a CalculatorOutput", function () {
+          _assert2.default.ok(result instanceof _CalculatorOutput2.default);
+        });
+
+        it("should have an AccountResult for the TSFA", function () {
+          _assert2.default.ok(result.TSFA instanceof _CalculatorOutput.AccountResults);
+        });
+
+        it("should have an AccountResult for the RRSP", function () {
+          _assert2.default.ok(result.RRSP instanceof _CalculatorOutput.AccountResults);
+        });
+
+        it("the after tax deposited for the TSFA should equal the amount invested", function () {
+          _assert2.default.strictEqual(result.TSFA.afterTax, amountInvested);
+        });
+
+        it("the after tax deposited for the RRSP should be correct", function () {
+          _assert2.default.strictEqual(result.RRSP.afterTax, (0, _util.roundTo)(expectedRRSPAfterTaxUnrounded, 2));
+        });
+
+        it("the after tax deposited for the RRSP should be such that the deposit minus the refund," + "\ngiven the current tax rate, equals the TSFA deposit", function () {
+          var RRSPAfterTax = result.RRSP.afterTax;
+
+          var RRSPRefund = RRSPAfterTax * currentTaxRate / 100;
+          var outOfPocketCost = RRSPAfterTax - RRSPRefund;
+          _assert2.default.strictEqual((0, _util.roundTo)(outOfPocketCost, 2), result.TSFA.afterTax);
+        });
+
+        it("the future value of the RRSP is correct", function () {
+          _assert2.default.strictEqual(result.RRSP.futureValue, (0, _util.roundTo)(expectedRRSPFutureValueUnrounded, 2));
+        });
+
+        it("the future value of the TSFA is correct", function () {
+          _assert2.default.strictEqual(result.TSFA.futureValue, (0, _util.roundTo)(expectedTSFAFutureValueUnrounded, 2));
+        });
+
+        it("the amount taxed on withdrawal for the TSFA should be 0", function () {
+          _assert2.default.strictEqual(result.TSFA.amountTaxedOnWithdrawal, 0);
+        });
+
+        it("the amount taxed on withdrawal for the RRSP should be the future value times the retirement tax rate", function () {
+          _assert2.default.strictEqual(result.RRSP.amountTaxedOnWithdrawal, (0, _util.roundTo)(expectedRRSPAmountTaxedUnrounded, 2));
+        });
+
+        it("the after tax future value for the TSFA should equal the future value (since withdrawals are not taxed)", function () {
+          _assert2.default.strictEqual(result.TSFA.futureValue, result.TSFA.afterTaxFutureValue);
+        });
+
+        it("the after tax future value of the RRSP should match expected", function () {
+          _assert2.default.strictEqual(result.RRSP.afterTaxFutureValue, (0, _util.roundTo)(expectedRRSPAfterTaxFutureValueUnrounded, 2));
+        });
+
+        //check consistency with other results
+        it("the after tax future value for the RRSP should equal its future value minus the amount that was taxed", function () {
+          _assert2.default.strictEqual(result.RRSP.afterTaxFutureValue, result.RRSP.futureValue - result.RRSP.amountTaxedOnWithdrawal);
+        });
+
+        it("since the tax rate on withdrawal equals the tax rate on deposit, the TSFA future value should equal the RRSP", function () {
+          _assert2.default.strictEqual(result.RRSP.afterTaxFutureValue, result.TSFA.afterTaxFutureValue);
+        });
+      });
+    });
 
     function validInputExceptMissing(field) {
       return validInputExcept(field, null);
@@ -394,80 +680,6 @@ describe("financial calculator test", function () {
       });
     });
   });
-
-  describe("test deductTaxFromAmount", function () {
-    describe("amount is positive", function () {
-      var amount = 1234.58;
-      describe("tax rate positive", function () {
-        describe("all of amount", function () {
-          var taxRate = 1.0;
-          it("should return 0", function () {
-            var expected = 0;
-            _assert2.default.strictEqual(FinancialCalculator.deductTaxFromAmount(amount, taxRate), expected);
-          });
-        });
-        describe("1% of amount", function () {
-          var taxRate = .01;
-          it("should return 99% of amount", function () {
-            var expected = 1222.234;
-            _assert2.default.ok(compareNumberStrings(expected, function () {
-              return FinancialCalculator.deductTaxFromAmount(amount, taxRate);
-            }));
-          });
-        });
-        describe("half of amount", function () {
-          var taxRate = .5;
-          it("should return half of amount", function () {
-            var expected = 617.29;
-            _assert2.default.ok(compareNumberStrings(expected, function () {
-              return FinancialCalculator.deductTaxFromAmount(amount, taxRate);
-            }));
-          });
-        });
-        describe("handles decimals in tax rate", function () {
-          var taxRate = .402;
-          it("should return ~59% of amount", function () {
-            var expected = 738.27884;
-            _assert2.default.ok(compareNumberStrings(expected, function () {
-              return FinancialCalculator.deductTaxFromAmount(amount, taxRate);
-            }));
-          });
-        });
-      });
-      describe("tax rate 0", function () {
-        var taxRate = 0;
-        it("should return amount", function () {
-          var expected = amount;
-          _assert2.default.strictEqual(expected, FinancialCalculator.deductTaxFromAmount(amount, taxRate));
-        });
-      });
-    });
-    describe("amount is 0", function () {
-      var amount = 0;
-      it("should return 0", function () {
-        var expected = 0;
-        _assert2.default.strictEqual(expected, FinancialCalculator.deductTaxFromAmount(amount, .5));
-      });
-    });
-  });
-
-  describe("test computeTSFA", function () {
-
-    var expectedResult = {};
-  });
-
-  describe("test computeRRSP", function () {});
-
-  /*expected results taken from: http://financeformulas.net/Real_Rate_of_Return.html#calcHeader
-   * to accommodate rounding and to keep this test independent of my round function, I test correctness of
-   * returned value by comparing substrings of the stringified representations of numeric result.
-   * */
-  function compareNumberStrings(expectedNumber, resultGenerator) {
-    var expectedAsString = '' + expectedNumber;
-    var resultSubstring = ('' + resultGenerator()).slice(0, expectedAsString.length);
-    return resultSubstring === expectedAsString;
-  }
-
   describe("test computeRealRateOfReturn", function () {
 
     describe("nominal is 0", function () {

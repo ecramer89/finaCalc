@@ -4,7 +4,7 @@ import CalculatorOutput, {AccountResults} from "../server/contracts/CalculatorOu
 import {roundTo} from "../server/util"
 
 import assert from 'assert'
-import * as TestData from "./testData"
+import {validInputExcept, validInputExceptMissing} from "./testData"
 
 /*expected results taken from: http://financeformulas.net/Real_Rate_of_Return.html#calcHeader
  * to accommodate rounding and to keep this test independent of my round function, I test correctness of
@@ -19,7 +19,7 @@ function compareNumberStrings(expectedNumber, resultGenerator){
 describe("financial calculator test", ()=>{
   describe("test calculate", ()=>{
 
-    describe.only("valid input", ()=>{
+    describe("valid input", ()=>{
 
       describe("RRSP is the better choice", ()=>{
         const currentTaxRate = 40.34
@@ -29,7 +29,7 @@ describe("financial calculator test", ()=>{
         const inflationRate = 2
         const yearsInvested = 35
 
-        //stringify to better atch conditions of input coming in from server
+        //stringify to better match conditions of input coming in from client
         const input = {
           currentTaxRate: `${currentTaxRate}%`,
           amountInvested: `${amountInvested}$`,
@@ -298,20 +298,6 @@ describe("financial calculator test", ()=>{
       })
 
     })
-
-
-    function validInputExceptMissing(field){
-     return validInputExcept(field, null)
-    }
-
-    function validInputExcept(field, badValue){
-      const input = {
-        ...TestData.validInputBreaksEven,
-        [field]: badValue
-      }
-      return new CalculatorInput(input)
-    }
-
 
     describe("invalid input", ()=>{
 
