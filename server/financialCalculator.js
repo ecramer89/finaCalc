@@ -85,7 +85,7 @@ export function computeTSFA(input){
  */
 export function computeRRSP(input){
   return composeResults(input,
-    (amountInvested, taxRate)=>amountInvested/(1-taxRate), //for the comparison to work, need to equate the -net cost to user- of depositing to the TSFA and RRSP. Because the net cost to user for the TSFA deposit equals the amount invested,
+    (amountInvested, taxRate)=>taxRate < 0 ? amountInvested : amountInvested/(1-taxRate), //for the comparison to work, need to equate the -net cost to user- of depositing to the TSFA and RRSP. Because the net cost to user for the TSFA deposit equals the amount invested,
     //need to adjust amount deposited into RRSP so that (taking the deducted refund into account) the net out of pocket cost to user equals the TSFA deposit.
     /*
     (small justification for why this value- the required after tax RRSP deposit- equals amountInvested/(1-taxRate))
@@ -98,6 +98,9 @@ export function computeRRSP(input){
      amountInvested(1-taxRate)/(1-taxRate) =
      amountInvested =
      TSFANetCost(amountInvested)
+
+     Conditional is there because, if the user has a negative tax rate (and is receiving supplemental payment from government)
+     then there is no tax refund to correct for, for RRSP deposit after tax can just equal amount invested.
      */
     (amount, taxRate)=>amount * taxRate) //RRSP withdrawals are taxed according to the retirement tax rate
 }

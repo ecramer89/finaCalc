@@ -366,10 +366,6 @@ describe("financial calculator test", ()=>{
               assert.ok(result.RRSP instanceof AccountResults)
             })
 
-            it("the after tax deposited for the TSFA should equal the amount invested", ()=>{
-              assert.strictEqual(result.TSFA.afterTax, amountInvested)
-            })
-
             it("the RRSP after tax should be a correct and large number", ()=>{
               assert.strictEqual(result.RRSP.afterTax, expectedRRSPAfterTax)
             })
@@ -379,13 +375,13 @@ describe("financial calculator test", ()=>{
             })
 
             it("since the tax rate on deposit exceeds the tax rate on withdrawl, the RRSP future value should exceed the TSFA", ()=>{
-              assert.strictEqual(result.RRSP.afterTaxFutureValue, result.TSFA.afterTaxFutureValue)
+              assert.ok(result.RRSP.afterTaxFutureValue > result.TSFA.afterTaxFutureValue)
             })
 
           })
 
           describe("is 0", ()=>{
-            const currentTaxRate = -3.45
+            const currentTaxRate = 0
             const input = {...baseInput, currentTaxRate: `${currentTaxRate}%`}
             const result = FinancialCalculator.calculate(new CalculatorInput(input))
 
@@ -413,7 +409,7 @@ describe("financial calculator test", ()=>{
             })
 
             it("since the tax rate on withdrawal exceeds the tax rate on deposit, the TSFA future value should exceed the RRSP", ()=>{
-              assert.strictEqual(result.RRSP.afterTaxFutureValue, result.TSFA.afterTaxFutureValue)
+              assert.ok(result.RRSP.afterTaxFutureValue < result.TSFA.afterTaxFutureValue)
             })
 
           })
@@ -453,7 +449,7 @@ describe("financial calculator test", ()=>{
             })
 
             it("since the tax rate on withdrawal exceeds the tax rate on deposit, the TSFA future value should exceed the RRSP", ()=>{
-              assert.strictEqual(result.RRSP.afterTaxFutureValue, result.TSFA.afterTaxFutureValue)
+              assert.ok(result.RRSP.afterTaxFutureValue < result.TSFA.afterTaxFutureValue)
             })
           })
         })
@@ -572,7 +568,7 @@ describe("financial calculator test", ()=>{
           })
 
           describe("TSFA future value exceeds max number", ()=>{
-         )
+
             it("should set the TSFA future value to equal the maximum numeric value", ()=>{
 
             })
