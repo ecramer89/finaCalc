@@ -328,6 +328,20 @@ describe("financial calculator test", function () {
           _assert2.default.strictEqual(result.RRSP.afterTaxFutureValue, result.TSFA.afterTaxFutureValue);
         });
       });
+
+      describe("test edge cases", function () {
+        //current tax rate
+        //max value: 99.99999999999999
+        //any negative
+        //0
+        //min value -99.99999999999999
+        //retirement tax rate
+        //max value: 100
+        //min value: -100
+        //0
+
+        describe("current tax rate is largest possible positive value", function () {});
+      });
     });
 
     describe("invalid input", function () {

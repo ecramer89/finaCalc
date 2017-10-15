@@ -320,6 +320,293 @@ describe("financial calculator test", ()=>{
         })
       })
 
+
+      //test different edge values for the two tax rates, which are the primary variables affecting the outcome of the calculate
+      //function that have not already been tested by unit tests for helper util functions.
+      describe("test edge cases", ()=>{
+
+
+        const currentTaxRate = 6.78
+        const amountInvested = 1225.45
+        const retirementTaxRate = 6.78
+        const investmentGrowthRate = 5
+        const inflationRate = 2
+        const yearsInvested = 10
+
+
+        const baseInput = {
+          currentTaxRate: `${currentTaxRate}%`,
+          amountInvested: `${amountInvested}$`,
+          retirementTaxRate: `${retirementTaxRate}%`,
+          investmentGrowthRate: `${investmentGrowthRate}%`,
+          inflationRate: `${inflationRate}%`,
+          yearsInvested: `${yearsInvested}`
+        }
+
+        describe("current tax rate", ()=>{
+
+          describe("is largest possible number less than 100", ()=>{
+            const currentTaxRate = 99.99999999999999
+            const expectedRRSPAfterTax = 11037872326722350000 //computed these values through independent (external) tools.
+            //main goal here is to ensure that the formulas performing the calculations can handle big numbers.
+            const expectedRRSPFutureValue = 14749224779862680000
+            const input = {...baseInput, currentTaxRate: `${currentTaxRate}%`}
+            const result = FinancialCalculator.calculate(new CalculatorInput(input))
+
+
+            it("should return a CalculatorOutput", ()=>{
+              assert.ok(result instanceof CalculatorOutput)
+            })
+
+            it("should have an AccountResult for the TSFA", ()=>{
+              assert.ok(result.TSFA instanceof AccountResults)
+            })
+
+            it("should have an AccountResult for the RRSP", ()=>{
+              assert.ok(result.RRSP instanceof AccountResults)
+            })
+
+            it("the after tax deposited for the TSFA should equal the amount invested", ()=>{
+              assert.strictEqual(result.TSFA.afterTax, amountInvested)
+            })
+
+            it("the RRSP after tax should be a correct and large number", ()=>{
+              assert.strictEqual(result.RRSP.afterTax, expectedRRSPAfterTax)
+            })
+
+            it("the RRSP future value should be a correct and large number", ()=>{
+              assert.strictEqual(result.RRSP.afterTax, expectedRRSPFutureValue)
+            })
+
+            it("since the tax rate on deposit exceeds the tax rate on withdrawl, the RRSP future value should exceed the TSFA", ()=>{
+              assert.strictEqual(result.RRSP.afterTaxFutureValue, result.TSFA.afterTaxFutureValue)
+            })
+
+          })
+
+          describe("is 0", ()=>{
+            const currentTaxRate = -3.45
+            const input = {...baseInput, currentTaxRate: `${currentTaxRate}%`}
+            const result = FinancialCalculator.calculate(new CalculatorInput(input))
+
+
+            it("should return a CalculatorOutput", ()=>{
+              assert.ok(result instanceof CalculatorOutput)
+            })
+
+            it("should have an AccountResult for the TSFA", ()=>{
+              assert.ok(result.TSFA instanceof AccountResults)
+            })
+
+            it("should have an AccountResult for the RRSP", ()=>{
+              assert.ok(result.RRSP instanceof AccountResults)
+            })
+
+            it("the after tax deposited for the TSFA should equal the amount invested", ()=>{
+              assert.strictEqual(result.TSFA.afterTax, amountInvested)
+            })
+
+            it("because the user does not pay any taxes, there should be no 'tax refund' on the RRSP deposit." +
+              "As such, there shouldn't be a need to correct for the RRSP tax refund and so the RRSP after tax deposit" +
+              "should equal the amount invested", ()=>{
+              assert.strictEqual(result.RRSP.afterTax, amountInvested)
+            })
+
+            it("since the tax rate on withdrawal exceeds the tax rate on deposit, the TSFA future value should exceed the RRSP", ()=>{
+              assert.strictEqual(result.RRSP.afterTaxFutureValue, result.TSFA.afterTaxFutureValue)
+            })
+
+          })
+
+          /*
+           (i.e., individual is receiving supplemental pay from the government, versus having to pay taxes." +
+           "Apparently features in some progressive tax systems wherein applies to individuals earning below a certain income; " +
+           "perhaps conceivable for Canadian government at some time
+           */
+          describe("is negative", ()=>{
+
+            const currentTaxRate = -3.45
+            const input = {...baseInput, currentTaxRate: `${currentTaxRate}%`}
+            const result = FinancialCalculator.calculate(new CalculatorInput(input))
+
+
+            it("should return a CalculatorOutput", ()=>{
+              assert.ok(result instanceof CalculatorOutput)
+            })
+
+            it("should have an AccountResult for the TSFA", ()=>{
+              assert.ok(result.TSFA instanceof AccountResults)
+            })
+
+            it("should have an AccountResult for the RRSP", ()=>{
+              assert.ok(result.RRSP instanceof AccountResults)
+            })
+
+            it("the after tax deposited for the TSFA should equal the amount invested", ()=>{
+              assert.strictEqual(result.TSFA.afterTax, amountInvested)
+            })
+
+            it("because the user does not pay any taxes, there should be no 'tax refund' on the RRSP deposit." +
+              "As such, there shouldn't be a need to correct for the RRSP tax refund and so the RRSP after tax deposit" +
+              "should equal the amount invested", ()=>{
+              assert.strictEqual(result.RRSP.afterTax, amountInvested)
+            })
+
+            it("since the tax rate on withdrawal exceeds the tax rate on deposit, the TSFA future value should exceed the RRSP", ()=>{
+              assert.strictEqual(result.RRSP.afterTaxFutureValue, result.TSFA.afterTaxFutureValue)
+            })
+          })
+        })
+
+        describe("retirement tax rate", ()=>{
+          describe("is 0", ()=>{
+            const retirementTaxRate = 0
+            const input = {...baseInput, retirementTaxRate: `${retirementTaxRate}`}
+            const result = FinancialCalculator.calculate(new CalculatorInput(input))
+
+
+            it("should return a CalculatorOutput", ()=>{
+              assert.ok(result instanceof CalculatorOutput)
+            })
+
+            it("should have an AccountResult for the TSFA", ()=>{
+              assert.ok(result.TSFA instanceof AccountResults)
+            })
+
+            it("should have an AccountResult for the RRSP", ()=>{
+              assert.ok(result.RRSP instanceof AccountResults)
+            })
+
+            it("the RRSP after tax future value should equal the future value", ()=>{
+              assert.strictEqual(result.RRSP.afterTaxFutureValue, result.RRSP.futureValue)
+            })
+
+
+          })
+
+          describe("is 100", ()=>{
+            const retirementTaxRate = 100
+            const input = {...baseInput, retirementTaxRate: `${retirementTaxRate}`}
+            const result = FinancialCalculator.calculate(new CalculatorInput(input))
+
+
+            it("should return a CalculatorOutput", ()=>{
+              assert.ok(result instanceof CalculatorOutput)
+            })
+
+            it("should have an AccountResult for the TSFA", ()=>{
+              assert.ok(result.TSFA instanceof AccountResults)
+            })
+
+            it("should have an AccountResult for the RRSP", ()=>{
+              assert.ok(result.RRSP instanceof AccountResults)
+            })
+
+            it("the RRSP after tax future value should be 0", ()=>{
+              assert.strictEqual(result.RRSP.afterTaxFutureValue, 0)
+            })
+          })
+
+          describe("is negative", ()=>{
+            const retirementTaxRate = -25
+            const input = {...baseInput, retirementTaxRate: `${retirementTaxRate}`}
+            const result = FinancialCalculator.calculate(new CalculatorInput(input))
+
+
+            it("should return a CalculatorOutput", ()=>{
+              assert.ok(result instanceof CalculatorOutput)
+            })
+
+            it("should have an AccountResult for the TSFA", ()=>{
+              assert.ok(result.TSFA instanceof AccountResults)
+            })
+
+            it("should have an AccountResult for the RRSP", ()=>{
+              assert.ok(result.RRSP instanceof AccountResults)
+            })
+
+            it("the amount taxed on withdrawal should be negative (indicating that money is awarded to user)", ()=>{
+
+            })
+
+            it("the RRSP after tax future value should be greater than the future value before tax, since the " +
+              "tax represents a supplemental payment", ()=>{
+            })
+          })
+
+        })
+
+        //large enough inputs can produce results that encounter overflow, leading to inaccuracies
+        //because the numbers are outside the range of what can be shown.
+        //in these cases
+        describe("handles number overflow", ()=>{
+
+          describe("RRSP after tax exceeds max value", ()=>{
+            it("should set the RRSP after tax to equal the maximum numeric value", ()=>{
+
+            })
+            it("the CalculatorOutput should have metaData", ()=>{
+
+            })
+            it("the metaData should have an 'RRSP After Tax was too large to be computed and exceeds the displayed value' message", ()=>{
+
+            })
+          })
+
+          describe("RRSP and TSFA future value exceed max number", ()=>{
+            it("should set the RRSP future value to equal the maximum numeric value", ()=>{
+
+            })
+            it("should set the TSFA future value to equal the maximum numeric value", ()=>{
+
+            })
+            it("the CalculatorOutput should have metaData", ()=>{
+
+            })
+            it("the metaData should have an 'RRSP Future Value was too large to be computed and exceeds the displayed value' message", ()=>{
+
+            })
+            it("the metaData should have an 'TSFA Future Value was too large to be computed and exceeds the displayed value' message", ()=>{
+
+            })
+          })
+
+          describe("TSFA future value exceeds max number", ()=>{
+         )
+            it("should set the TSFA future value to equal the maximum numeric value", ()=>{
+
+            })
+            it("the CalculatorOutput should have metaData", ()=>{
+
+            })
+            it("the metaData should have an 'TSFA Future Value was too large to be computed and exceeds the displayed value' message", ()=>{
+
+            })
+          })
+
+          describe("RRSP future value exceeds max number", ()=>{
+            const currentTaxRate = 99.99999999999999
+            const retirementTaxRate = -99.99999999999999
+            const expectedRRSPAfterTax = 11037872326722350000 //computed these values through independent (external) tools.
+            //main goal here is to ensure that the formulas performing the calculations can handle big numbers.
+            const expectedRRSPFutureValue = 14749224779862680000
+
+            const input = {...baseInput, currentTaxRate: `${currentTaxRate}%`}
+            const result = FinancialCalculator.calculate(new CalculatorInput(input))
+            it("should set the RRSP Future Value After Tax to equal the maximum numeric value", ()=>{
+
+            })
+            it("the CalculatorOutput should have metaData", ()=>{
+
+            })
+            it("the metaData should have an 'TSFA Future Value After Tax was too large to be computed and exceeds the displayed value' message", ()=>{
+
+            })
+          })
+        })
+
+      })
+
     })
 
     describe("invalid input", ()=>{

@@ -1,11 +1,14 @@
 export default class CalculatorOutput{
   /*
-   @param {TSFA} AccountResults
-   @param {RRSP} AccountResults
+   @param {AccountResults} TSFA
+   @param {AccountResults} RRSP
+   @param {Array(string)=} metaData optional array of messages communicating information about the computed results.
    */
-  constructor({TSFA, RRSP}){
+  constructor({TSFA, RRSP, metaData}){
      this.TSFA = TSFA ? new AccountResults(TSFA) : null,
      this.RRSP = RRSP ? new AccountResults(RRSP) : null
+     this.metaData = metaData && Array.isArray(metaData)
+      && metaData.reduce((allString, msg)=>allString&&typeof(msg) == 'string', true) ? metaData : []
   }
 }
 
