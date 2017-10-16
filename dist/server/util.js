@@ -17,16 +17,13 @@ function toNumber(value) {
   return Number.isFinite(asNumber) ? asNumber : null;
 }
 
-/*I researched and learned about the exponentiation technique for correctly rounding numbers in Javascript from this blog post:
- * http://www.jacklmoore.com/notes/rounding-in-javascript/
- * this is necessary because native JS doesn't have a function to round to places and other techniques (such as multiplying/flooring/dividing by 100 or using "toFixed"
- * don't round up; they always floor to the nearest integer.
- * as such, values such as 5.6789 rounded to two would become 5.67 instead of 5.68.
+/* rounds value ti given places
  * REQUIRES: places >= 0
 */
 function roundTo(value, places) {
   if (places < 0) return value;
-  return Number(Math.round(value + 'e' + places) + 'e-' + places);
+  var multiple = Math.pow(10, places);
+  return Math.round(value * multiple) / multiple;
 }
 
 //converts a number representing a percentage to a decimal.

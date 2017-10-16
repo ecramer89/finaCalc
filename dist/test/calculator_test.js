@@ -1,5 +1,7 @@
 "use strict";
 
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 var _financialCalculator = require("../server/financialCalculator");
 
 var FinancialCalculator = _interopRequireWildcard(_financialCalculator);
@@ -58,13 +60,13 @@ describe("financial calculator test", function () {
 
           //compute derived fields up here, for ease of reference.
 
-          /*
-            I assumed that the server should leave anything that is used as input to a subsequent equation
-            unrounded, and then round all the data to show to the client at the end.
-            (i.e., computed deposit value is a result but also input to the future value calculation,
-            which is input to the withdrawal tax calculation, etc. although I round the future value that is returned to user,
-            but left unrounded when provided as input to withdrawal tax calculation.
-           */
+
+          //I assumed that the server should leave anything that is used as input to a subsequent equation
+          // unrounded, and then round all the data to show to the client at the end.
+          //(i.e., computed deposit value is a result but also input to the future value calculation,
+          //which is input to the withdrawal tax calculation, etc. although I round the future value that is returned to user,
+          //but left unrounded when provided as input to withdrawal tax calculation.
+
         };var realRateOfReturn = (1 + investmentGrowthRate / 100) / (1 + inflationRate / 100) - 1;
         var expectedRRSPAfterTaxUnrounded = amountInvested / (1 - currentTaxRate / 100);
         var expectedRRSPFutureValueUnrounded = expectedRRSPAfterTaxUnrounded * Math.pow(1 + realRateOfReturn, yearsInvested);
@@ -124,28 +126,31 @@ describe("financial calculator test", function () {
         it("the after tax future value of the RRSP should match expected", function () {
           _assert2.default.strictEqual(result.RRSP.afterTaxFutureValue, (0, _util.roundTo)(expectedRRSPAfterTaxFutureValueUnrounded, 2));
         });
-        /*
-        NOTE TO EXAMINERS:
-        -this is an edge case where, because I chose to round all of the results -at the very end-,
-        and left them -unrounded- throughout their use in the calculation of intermediate or other results,
-        there CAN be some inconsistencies between the final decimal point of values derived from the intermediate unrounded
-        and final rounded results.
-        for example,
-        server computes after tax future value using the un-rounded future value and unrounded amount taxed, and then rounds the result.
-         in this particular case, the result:
-        (server): (unrounded future value - unrounded amount tax), rounds down to the last decimal place.
-        however,
-        rounded future value - rounded amount taxed (because rounded future value rounds up) has a higher value for last decimal place.
-         I was uncertain whether the server (in computing all the final results) should round intermediate values or leave all unrounded until end.
-        I faced a similar scenario on an earlier project, where a receipt was supposed to print (rounded) amounts taxed on all order items,
-        as well as a rounded total tax. there to, since the total tax was derived from -unrounded- item tax amounts,
-        there could be inconsistencies bw the total tax that appeared on receipt and the result that one would get by summing all
-        the item tax amounts that appeared on receipt. My superiors told me that was an acceptable and known consequence of 'rounding rules',
-        so I thought it plausible the same might apply here.
-         (Rounding rules is definitely an issue that would require clarification with superiors).
-        I have left this test (which fails) here, albeit skipped, because this is what I would show my superiors as an example
-        if I had concerns and questions about rounding inconsistencies.
-         */
+
+        //NOTE TO EXAMINERS:
+        // -this is an edge case where, because I chose to round all of the results -at the very end-,
+        // and left them -unrounded- throughout their use in the calculation of intermediate or other results,
+        // there CAN be some inconsistencies between the final decimal point of values derived from the intermediate unrounded
+        // and final rounded results.
+        // for example,
+        // server computes after tax future value using the un-rounded future value and unrounded amount taxed, and then rounds the result.
+        //
+        // in this particular case, the result:
+        // (server): (unrounded future value - unrounded amount tax), rounds down to the last decimal place.
+        // however,
+        // rounded future value - rounded amount taxed (because rounded future value rounds up) has a higher value for last decimal place.
+        //
+        // I was uncertain whether the server (in computing all the final results) should round intermediate values or leave all unrounded until end.
+        // I faced a similar scenario on an earlier project, where a receipt was supposed to print (rounded) amounts taxed on all order items,
+        // as well as a rounded total tax. there to, since the total tax was derived from -unrounded- item tax amounts,
+        // there could be inconsistencies bw the total tax that appeared on receipt and the result that one would get by summing all
+        // the item tax amounts that appeared on receipt. My superiors told me that was an acceptable and known consequence of 'rounding rules',
+        // so I thought it plausible the same might apply here.
+        //
+        // (Rounding rules is definitely an issue that would require clarification with superiors).
+        // I have left this test (which fails) here, albeit skipped, because this is what I would show my superiors as an example
+        // if I had concerns and questions about rounding inconsistencies.
+        //
         it.skip("the after tax future value for the RRSP should equal its future value minus the amount that was taxed", function () {
           _assert2.default.strictEqual(result.RRSP.afterTaxFutureValue, result.RRSP.futureValue - result.RRSP.amountTaxedOnWithdrawal);
         });
@@ -329,18 +334,244 @@ describe("financial calculator test", function () {
         });
       });
 
+      //test different edge values for the two tax rates, which are the primary variables affecting the outcome of the calculate
+      //function that have not already been tested by unit tests for helper util functions.
       describe("test edge cases", function () {
-        //current tax rate
-        //max value: 99.99999999999999
-        //any negative
-        //0
-        //min value -99.99999999999999
-        //retirement tax rate
-        //max value: 100
-        //min value: -100
-        //0
 
-        describe("current tax rate is largest possible positive value", function () {});
+        var currentTaxRate = 6.78;
+        var amountInvested = 1225.45;
+        var retirementTaxRate = 6.78;
+        var investmentGrowthRate = 2.941;
+        var inflationRate = 0; //set inflation rate to 0 for this test so that could compare computed values with
+        //results acquired from online too. if inflation rate was non zero, rounding differences in the browser tool
+        //real rate of return and this caused differences in the computed future values.
+        var yearsInvested = 10;
+
+        var baseInput = {
+          currentTaxRate: currentTaxRate + "%",
+          amountInvested: amountInvested + "$",
+          retirementTaxRate: retirementTaxRate + "%",
+          investmentGrowthRate: investmentGrowthRate + "%",
+          inflationRate: inflationRate + "%",
+          yearsInvested: "" + yearsInvested
+        };
+
+        describe("current tax rate", function () {
+
+          describe("is largest possible number less than 100", function () {
+            var currentTaxRate = 99.99999999999999;
+            var expectedRRSPAfterTax = 11037872326722350000; //computed these values through independent (external) tools.
+            //main goal here is to ensure that the formulas performing the calculations can handle big numbers.
+            var expectedRRSPFutureValue = 14749224779862680000;
+            var input = _extends({}, baseInput, { currentTaxRate: currentTaxRate + "%" });
+            var result = FinancialCalculator.calculate(new _CalculatorInput2.default(input));
+
+            it("should return a CalculatorOutput", function () {
+              _assert2.default.ok(result instanceof _CalculatorOutput2.default);
+            });
+
+            it("should have an AccountResult for the TSFA", function () {
+              _assert2.default.ok(result.TSFA instanceof _CalculatorOutput.AccountResults);
+            });
+
+            it("should have an AccountResult for the RRSP", function () {
+              _assert2.default.ok(result.RRSP instanceof _CalculatorOutput.AccountResults);
+            });
+
+            it("the RRSP after tax should be a correct and large number", function () {
+              _assert2.default.strictEqual(result.RRSP.afterTax, expectedRRSPAfterTax);
+            });
+
+            it("the RRSP future value should be a correct and large number", function () {
+              _assert2.default.strictEqual(result.RRSP.futureValue, expectedRRSPFutureValue);
+            });
+
+            it("since the tax rate on deposit exceeds the tax rate on withdrawl, the RRSP future value should exceed the TSFA", function () {
+              _assert2.default.ok(result.RRSP.afterTaxFutureValue > result.TSFA.afterTaxFutureValue);
+            });
+          });
+
+          describe("is 0", function () {
+            var currentTaxRate = 0;
+            var input = _extends({}, baseInput, { currentTaxRate: currentTaxRate + "%" });
+            var result = FinancialCalculator.calculate(new _CalculatorInput2.default(input));
+
+            it("should return a CalculatorOutput", function () {
+              _assert2.default.ok(result instanceof _CalculatorOutput2.default);
+            });
+
+            it("should have an AccountResult for the TSFA", function () {
+              _assert2.default.ok(result.TSFA instanceof _CalculatorOutput.AccountResults);
+            });
+
+            it("should have an AccountResult for the RRSP", function () {
+              _assert2.default.ok(result.RRSP instanceof _CalculatorOutput.AccountResults);
+            });
+
+            it("the after tax deposited for the TSFA should equal the amount invested", function () {
+              _assert2.default.strictEqual(result.TSFA.afterTax, amountInvested);
+            });
+
+            it("because the user does not pay any taxes, there should be no 'tax refund' on the RRSP deposit." + "As such, there shouldn't be a need to correct for the RRSP tax refund and so the RRSP after tax deposit" + "should equal the amount invested", function () {
+              _assert2.default.strictEqual(result.RRSP.afterTax, amountInvested);
+            });
+
+            it("since the tax rate on withdrawal exceeds the tax rate on deposit, the TSFA future value should exceed the RRSP", function () {
+              _assert2.default.ok(result.RRSP.afterTaxFutureValue < result.TSFA.afterTaxFutureValue);
+            });
+          });
+
+          /*
+           (i.e., individual is receiving supplemental pay from the government, versus having to pay taxes." +
+           "Apparently features in some progressive tax systems wherein applies to individuals earning below a certain income; " +
+           "perhaps conceivable for Canadian government at some time
+           */
+          describe("is negative", function () {
+
+            var currentTaxRate = -3.45;
+            var input = _extends({}, baseInput, { currentTaxRate: currentTaxRate + "%" });
+            var result = FinancialCalculator.calculate(new _CalculatorInput2.default(input));
+
+            it("should return a CalculatorOutput", function () {
+              _assert2.default.ok(result instanceof _CalculatorOutput2.default);
+            });
+
+            it("should have an AccountResult for the TSFA", function () {
+              _assert2.default.ok(result.TSFA instanceof _CalculatorOutput.AccountResults);
+            });
+
+            it("should have an AccountResult for the RRSP", function () {
+              _assert2.default.ok(result.RRSP instanceof _CalculatorOutput.AccountResults);
+            });
+
+            it("the after tax deposited for the TSFA should equal the amount invested", function () {
+              _assert2.default.strictEqual(result.TSFA.afterTax, amountInvested);
+            });
+
+            it("because the user does not pay any taxes, there should be no 'tax refund' on the RRSP deposit." + "As such, there shouldn't be a need to correct for the RRSP tax refund and so the RRSP after tax deposit" + "should equal the amount invested", function () {
+              _assert2.default.strictEqual(result.RRSP.afterTax, amountInvested);
+            });
+
+            it("since the tax rate on withdrawal exceeds the tax rate on deposit, the TSFA future value should exceed the RRSP", function () {
+              _assert2.default.ok(result.RRSP.afterTaxFutureValue < result.TSFA.afterTaxFutureValue);
+            });
+          });
+        });
+
+        describe("retirement tax rate", function () {
+          describe("is 0", function () {
+            var retirementTaxRate = 0;
+            var input = _extends({}, baseInput, { retirementTaxRate: "" + retirementTaxRate });
+            var result = FinancialCalculator.calculate(new _CalculatorInput2.default(input));
+
+            it("should return a CalculatorOutput", function () {
+              _assert2.default.ok(result instanceof _CalculatorOutput2.default);
+            });
+
+            it("should have an AccountResult for the TSFA", function () {
+              _assert2.default.ok(result.TSFA instanceof _CalculatorOutput.AccountResults);
+            });
+
+            it("should have an AccountResult for the RRSP", function () {
+              _assert2.default.ok(result.RRSP instanceof _CalculatorOutput.AccountResults);
+            });
+
+            it("the RRSP after tax future value should equal the future value", function () {
+              _assert2.default.strictEqual(result.RRSP.afterTaxFutureValue, result.RRSP.futureValue);
+            });
+          });
+
+          describe("is 100", function () {
+            var retirementTaxRate = 100;
+            var input = _extends({}, baseInput, { retirementTaxRate: "" + retirementTaxRate });
+            var result = FinancialCalculator.calculate(new _CalculatorInput2.default(input));
+
+            it("should return a CalculatorOutput", function () {
+              _assert2.default.ok(result instanceof _CalculatorOutput2.default);
+            });
+
+            it("should have an AccountResult for the TSFA", function () {
+              _assert2.default.ok(result.TSFA instanceof _CalculatorOutput.AccountResults);
+            });
+
+            it("should have an AccountResult for the RRSP", function () {
+              _assert2.default.ok(result.RRSP instanceof _CalculatorOutput.AccountResults);
+            });
+
+            it("the RRSP after tax future value should be 0", function () {
+              _assert2.default.strictEqual(result.RRSP.afterTaxFutureValue, 0);
+            });
+          });
+
+          describe("is negative", function () {
+            var retirementTaxRate = -25;
+            var input = _extends({}, baseInput, { retirementTaxRate: "" + retirementTaxRate });
+            var result = FinancialCalculator.calculate(new _CalculatorInput2.default(input));
+
+            it("should return a CalculatorOutput", function () {
+              _assert2.default.ok(result instanceof _CalculatorOutput2.default);
+            });
+
+            it("should have an AccountResult for the TSFA", function () {
+              _assert2.default.ok(result.TSFA instanceof _CalculatorOutput.AccountResults);
+            });
+
+            it("should have an AccountResult for the RRSP", function () {
+              _assert2.default.ok(result.RRSP instanceof _CalculatorOutput.AccountResults);
+            });
+
+            it("the amount taxed on withdrawal should be negative (indicating that money is awarded to user)", function () {
+              _assert2.default.strictEqual(result.RRSP.amountTaxedOnWithdrawal, Math.round(result.RRSP.futureValue * -.25 * 100) / 100);
+            });
+
+            it("the RRSP after tax future value should be greater than the future value before tax, since the " + "tax represents a supplemental payment", function () {
+              _assert2.default.ok(result.RRSP.afterTaxFutureValue > result.RRSP.futureValue);
+            });
+
+            it("the RRSP after tax future value should exceed the TSFA after tax future value", function () {
+              _assert2.default.ok(result.RRSP.afterTaxFutureValue > result.TSFA.afterTaxFutureValue);
+            });
+          });
+        });
+
+        //large enough inputs can produce results that encounter overflow, leading to inaccuracies
+        //because the numbers are outside the range of what can be shown.
+        //in these cases
+        describe("handles big numbers", function () {
+          //largest possible numeric input numbers (after this, JS switches to exponential string notation,
+          //which does not pass validations in CalculatorInput
+          var amountInvested = 100000000000000000000;
+          var yearsInvested = 100000000000000000000;
+
+          var greaterThanMax = "Too much to count.";
+
+          var currentTaxRate = 99.99999999999999; //largest possible numeric percent that can be provided.
+
+
+          var input = _extends({}, baseInput, {
+            amountInvested: amountInvested + "$",
+            currentTaxRate: "" + currentTaxRate,
+            yearsInvested: yearsInvested
+          });
+
+          var result = FinancialCalculator.calculate(new _CalculatorInput2.default(input));
+
+          it("should set the RRSP future value to " + greaterThanMax, function () {
+            _assert2.default.strictEqual(result.RRSP.futureValue, greaterThanMax);
+          });
+          it("should set the RRSP amount taxed on withdrawal to " + greaterThanMax, function () {
+            _assert2.default.strictEqual(result.RRSP.amountTaxedOnWithdrawal, greaterThanMax);
+          });
+          it("should set the RRSP future value after tax to " + greaterThanMax, function () {
+            _assert2.default.strictEqual(result.RRSP.afterTaxFutureValue, greaterThanMax);
+          });
+          it("should set the TSFA future value to " + greaterThanMax, function () {
+            _assert2.default.strictEqual(result.TSFA.futureValue, greaterThanMax);
+          });
+          it("should set the TSFA future value after tax to " + greaterThanMax, function () {
+            _assert2.default.strictEqual(result.TSFA.afterTaxFutureValue, greaterThanMax);
+          });
+        });
       });
     });
 
