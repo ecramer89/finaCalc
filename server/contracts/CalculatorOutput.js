@@ -17,13 +17,9 @@ export class AccountResults{
    @param {number} afterTaxFutureValue
    */
   constructor({afterTax,futureValue,amountTaxedOnWithdrawal,afterTaxFutureValue}){
-      this.afterTax = checkAndHandleInfinity(afterTax)
-      this.futureValue = checkAndHandleInfinity(futureValue)
-      this.amountTaxedOnWithdrawal = checkAndHandleInfinity(amountTaxedOnWithdrawal)
-      this.afterTaxFutureValue = checkAndHandleInfinity(afterTaxFutureValue)
+      this.afterTax = Number.isFinite(afterTax) ? afterTax : "Too much to count."
+      this.futureValue = Number.isFinite(futureValue) ? futureValue : "Too much to count."
+      this.amountTaxedOnWithdrawal = Number.isFinite(amountTaxedOnWithdrawal) ? amountTaxedOnWithdrawal : "Too much to count."
+      this.afterTaxFutureValue = Number.isFinite(afterTaxFutureValue) ? afterTaxFutureValue : "Too much to count."
   }
-}
-
-function checkAndHandleInfinity(output){
-  return output == 'Infinity' ? "Too much to count." : Number.isFinite(output) ? output : null
 }
