@@ -955,6 +955,7 @@ describe("financial calculator test", ()=>{
 
     })
     })
+  //expected values taken from: http://financeformulas.net/Real_Rate_of_Return.html
   describe("test computeRealRateOfReturn", ()=>{
 
     describe("nominal is 0", ()=>{
@@ -1033,7 +1034,6 @@ describe("financial calculator test", ()=>{
       })
 
   })
-
   /*expected values taken from: http://financeformulas.net/Future_Value.html#calcHeader */
   describe("test computeFutureValue", ()=>{
 
