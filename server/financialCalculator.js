@@ -18,9 +18,12 @@ export function handler(req, res){
  */
 export function calculate(calculatorInput){
   validate(calculatorInput)
+  const TSFA = computeTSFA(calculatorInput)
+  const RRSP = computeRRSP(calculatorInput)
   return new CalculatorOutput({
-    TSFA: computeTSFA(calculatorInput),
-    RRSP: computeRRSP(calculatorInput)
+    TSFA,
+    RRSP,
+    betterAccount: determineBetterAccount(TSFA.afterTaxFutureValue, RRSP.afterTaxFutureValue, calculatorInput)
   })
 }
 
@@ -114,7 +117,31 @@ export function computeRRSP(input){
     })
 }
 
-
+/*
+ @param {CalculatorInput} calculatorInput
+ @param {number} RRSPFutureValueAfterTax
+ @param {number}
+ @param {number}
+ @return {string} name of the account that would yield better result based on future value after tax or 'either' if they yield the same return.
+ */
+function determineBetterAccount(TSFAFutureValueAfterTax, RRSPFutureValueAfterTax, calculatorInput){
+  const {retirementTaxRate,currentTaxRate} = calculatorInput
+  //because of possible inconsistencies in comparison of unrounded tax rates and in computed after tax future values that show
+  //up on client, would generally prefer to decide this on basis of computed after tax future values.
+  //only if both after tax future values are infinity should we default to the raw inputted tax rates.
+  if(TSFAFutureValueAfterTax == Number.POSITIVE_INFINITY && RRSPFutureValueAfterTax == Number.POSITIVE_INFINITY){
+    const taxRateComparison = retirementTaxRate - currentTaxRate
+    if(taxRateComparison === 0) return "either"
+    if(taxRateComparison < 0) return "RRSP"
+    return "TSFA"
+  }
+  //JS can't handle big numbers so just converts them all to positive infinity at some point.
+  //strictly speaking, even if both account after tax future value are positive infinity, we can still infer which should yield better value
+  //based on the difference in the tax rates on deposit and withdrawal.
+  if(TSFAFutureValueAfterTax === RRSPFutureValueAfterTax) return "either"
+  if(TSFAFutureValueAfterTax === Number.POSITIVE_INFINITY || TSFAFutureValueAfterTax > RRSPFutureValueAfterTax) return "TSFA"
+  return "RRSP"
+}
 
 /*
 
@@ -159,6 +186,9 @@ export function composeResults(input, computeAfterTax, computeAmountTaxedOnWithd
     afterTaxFutureValue: roundTo(afterTaxFutureValue,2)
   }
 }
+
+
+
 /*
  * @param {number} nominalRateOfReturn expressed as a decimal.
  * @param {number} inflationRate expressed as a decimal.
@@ -175,6 +205,8 @@ export function computeRealRateOfReturn(nominalRateOfReturn,inflationRate){
 export function computeFutureValue(afterTax,rateOfReturn,yearsInvested){
   return afterTax * Math.pow((1 + rateOfReturn), yearsInvested);
 }
+
+
 
 
 

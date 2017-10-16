@@ -4,10 +4,10 @@ export default class CalculatorOutput{
    @param {AccountResults} RRSP
    @param {string} betterAccount name (TSFA or RRSP) of account with greater future value; either if have the same future value.
    */
-  constructor({TSFA, RRSP}){
+  constructor({TSFA, RRSP, betterAccount}){
      this.TSFA = TSFA ? new AccountResults(TSFA) : null,
      this.RRSP = RRSP ? new AccountResults(RRSP) : null
-     this.betterAccount = determineBetterAccount(this.TSFA.afterTaxFutureValue, this.RRSP.afterTaxFutureValue)
+     this.betterAccount = betterAccount
   }
 }
 
@@ -31,8 +31,3 @@ export class AccountResults{
   }
 }
 
-function determineBetterAccount(TSFAFutureValue, RRSPFutureValue){
-  if(TSFAFutureValue === RRSPFutureValue) return "either"
-  if(TSFAFutureValue === BIG_NUMBER || TSFAFutureValue > RRSPFutureValue) return "TSFA"
-  return "RRSP"
-}

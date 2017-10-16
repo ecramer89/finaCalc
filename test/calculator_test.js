@@ -570,7 +570,39 @@ describe("financial calculator test", ()=>{
 
           const bigNumber = "Too big to count";
 
-          describe.only("both have infinite future value after tax but the tax rate on withdrawal is less than tax rate on deposit", ()=> {
+          describe("both have infinite future value after tax but the tax rate on withdrawal equals tax rate on deposit", ()=> {
+
+            const input = {
+              ...baseInput,
+              amountInvested: `${amountInvested}$`,
+              currentTaxRate: `${retirementTaxRate}`,
+              yearsInvested
+            }
+
+            const result = FinancialCalculator.calculate(new CalculatorInput(input))
+
+            it(`should set the RRSP future value to ${bigNumber}`, () => {
+              assert.strictEqual(result.RRSP.futureValue, bigNumber)
+            })
+            it(`should set the RRSP amount taxed on withdrawal to ${bigNumber}`, () => {
+              assert.strictEqual(result.RRSP.amountTaxedOnWithdrawal, bigNumber)
+            })
+            it(`should set the RRSP future value after tax to ${bigNumber}`, () => {
+              assert.strictEqual(result.RRSP.afterTaxFutureValue, bigNumber)
+            })
+            it(`should set the TSFA future value to ${bigNumber}`, () => {
+              assert.strictEqual(result.TSFA.futureValue, bigNumber)
+            })
+            it(`should set the TSFA future value after tax to ${bigNumber}`, () => {
+              assert.strictEqual(result.TSFA.afterTaxFutureValue, bigNumber)
+            })
+
+            it("the betterAccount should be either", () => {
+              assert.strictEqual(result.betterAccount, "either")
+            })
+          })
+
+          describe("both have infinite future value after tax but the tax rate on withdrawal is less than tax rate on deposit", ()=> {
             const currentTaxRate = 99.99999999999999; //largest possible numeric percent that can be provided.
 
 
@@ -606,7 +638,7 @@ describe("financial calculator test", ()=>{
           })
 
           describe("both have infinite future value after tax but the tax rate on withdrawal is greater than tax rate on deposit", ()=> {
-            const currentTaxRate = .1; //largest possible numeric percent that can be provided.
+            const currentTaxRate = .1;
 
 
             const input = {
