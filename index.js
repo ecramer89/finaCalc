@@ -1,22 +1,20 @@
-const express = require('express');
-const path = require('path')
-const bodyParser = require('body-parser')
-const {calculate} = require('./server/financialCalculator')
+import express from 'express';
+import path from 'path'
+import bodyParser from 'body-parser'
+import {handler} from './server/financialCalculator'
 
 const app = express();
 
 app.use(bodyParser.json())
-//app.use(bodyParser.urlencoded({ extended: true })); //extended is only required if we anticipate having deeply nested objects.
-//you should delete it if that won't be the case
 
-app.get("/", function(req, res){
+app.get("/", (req, res)=>{
   res.sendFile(path.join(__dirname+'/client/index.html'))
 });
 
-app.post("/calculate", function(req, res){
-   calculate(req, res)
+app.post("/calculate", (req, res)=>{
+   handler(req, res)
 })
 
-app.listen(3000, function(){
+app.listen(3000, ()=>{
   console.log("Listening on port 3000")
 });

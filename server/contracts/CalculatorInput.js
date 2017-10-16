@@ -1,15 +1,24 @@
-const {toNumber} = require("../util")
-
-class CalculatorInput{
-  constructor(data){
-    this.currentTaxRate = toNumber(data.currentTaxRate);
-    this.amountInvested = toNumber(data.amountInvested)
-    this.retirementTaxRate = toNumber(data.retirementTaxRate);
-    this.investmentGrowthRate = toNumber(data.investmentGrowthRate);
-    this.inflationRate = toNumber(data.inflationRate);
-    this.yearsInvested = toNumber(data.yearsInvested)
-
+import {toNumber} from "../util"
+/**
+ * constructor
+ * negative values are accepted for all tax and growth rates and inflation. Some people have 'negative' tax rates if they receive substantial government subsidies.
+ * negative inflation => deflation
+ *
+ * @param {number} (or string representation of number) currentTaxRate tax rate expressed as percentage. % okay but not necessary. - values accepted.
+ * @param {number} (or string representation of number) amountInvested. Must be positive. $ ok but not necessary.
+ * @param {number} (or string representation of number) retirementTaxRate tax rate expressed as percentage. % okay but not necessary. - values accepted.
+ * @param {number} (or string representation of number) investmentGrowthRate expressed as percentage. % okay but not necessary. - values accepted.
+ * @param {number} (or string representation of number) inflationRate expressed as percentage. % okay but not necessary. - values accepted.
+ * @param {number} (or string representation of number) yearsInvested. Must be positive.
+ */
+export default class CalculatorInput{
+  constructor({currentTaxRate,amountInvested,retirementTaxRate,investmentGrowthRate,inflationRate,yearsInvested}){
+    this.currentTaxRate = toNumber(currentTaxRate);
+    this.amountInvested = toNumber(amountInvested)
+    this.retirementTaxRate = toNumber(retirementTaxRate);
+    this.investmentGrowthRate = toNumber(investmentGrowthRate);
+    this.inflationRate = toNumber(inflationRate);
+    this.yearsInvested = toNumber(yearsInvested)
   }
 }
 
-module.exports = CalculatorInput
