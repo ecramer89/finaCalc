@@ -570,7 +570,8 @@ describe("financial calculator test", ()=>{
 
           const bigNumber = "Too big to count";
 
-          const currentTaxRate = 99.99999999999999; //largest possible numeric percent that can be provided.
+          describe.only("both have infinite future value after tax but the tax rate on withdrawal is less than tax rate on deposit", ()=> {
+            const currentTaxRate = 99.99999999999999; //largest possible numeric percent that can be provided.
 
 
             const input = {
@@ -598,9 +599,46 @@ describe("financial calculator test", ()=>{
               assert.strictEqual(result.TSFA.afterTaxFutureValue, bigNumber)
             })
 
-            it("the betterAccount should be either", ()=>{
-              assert.strictEqual(result.betterAccount, "either")
+            it("the betterAccount should be RRSP, since although both future values after tax are too big to count, " +
+              "we can infer that the RRSP should be better since the retirement tax rate is lower than deposit tax rate", () => {
+              assert.strictEqual(result.betterAccount, "RRSP")
             })
+          })
+
+          describe("both have infinite future value after tax but the tax rate on withdrawal is greater than tax rate on deposit", ()=> {
+            const currentTaxRate = .1; //largest possible numeric percent that can be provided.
+
+
+            const input = {
+              ...baseInput,
+              amountInvested: `${amountInvested}$`,
+              currentTaxRate: `${currentTaxRate}`,
+              yearsInvested
+            }
+
+            const result = FinancialCalculator.calculate(new CalculatorInput(input))
+
+            it(`should set the RRSP future value to ${bigNumber}`, () => {
+              assert.strictEqual(result.RRSP.futureValue, bigNumber)
+            })
+            it(`should set the RRSP amount taxed on withdrawal to ${bigNumber}`, () => {
+              assert.strictEqual(result.RRSP.amountTaxedOnWithdrawal, bigNumber)
+            })
+            it(`should set the RRSP future value after tax to ${bigNumber}`, () => {
+              assert.strictEqual(result.RRSP.afterTaxFutureValue, bigNumber)
+            })
+            it(`should set the TSFA future value to ${bigNumber}`, () => {
+              assert.strictEqual(result.TSFA.futureValue, bigNumber)
+            })
+            it(`should set the TSFA future value after tax to ${bigNumber}`, () => {
+              assert.strictEqual(result.TSFA.afterTaxFutureValue, bigNumber)
+            })
+
+            it("the betterAccount should be TSFA, since although both future values after tax are too big to count, " +
+              "we can infer that the TSFA should be better since the deposit tax rate is lower than retirement tax rate", () => {
+              assert.strictEqual(result.betterAccount, "TSFA")
+            })
+          })
 
 
             describe("handles intermediate infinities", ()=>{
