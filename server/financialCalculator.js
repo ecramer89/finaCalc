@@ -71,9 +71,11 @@ function validate(input){
  @return {AccountResults}
  */
 export function computeTSFA(input){
-  return composeResults(input,
+  return composeResults(
+    input,
     (amountInvested)=>amountInvested, //TSFA deposits made with after-tax dollars, so net cost is just the amount the user invests
-    ()=>0 //TSFA withdrawals are not taxed, so the tax on withdrawal is just 0.
+    ()=>0, //TSFA withdrawals are not taxed, so the tax on withdrawal is just 0.
+    (futureValue)=>futureValue //future value after tax is just future value
   )
 
 
@@ -85,7 +87,8 @@ export function computeTSFA(input){
  */
 export function computeRRSP(input){
 
-  return composeResults(input,
+  return composeResults(
+    input,
     (amountInvested, taxRate)=>taxRate < 0 ? amountInvested : amountInvested/(1-taxRate), //for the comparison to work, need to equate the -net cost to user- of depositing to the TSFA and RRSP. Because the net cost to user for the TSFA deposit equals the amount invested,
     //need to adjust amount deposited into RRSP so that (taking the deducted refund into account) the net out of pocket cost to user equals the TSFA deposit.
     /*
@@ -103,8 +106,30 @@ export function computeRRSP(input){
      Conditional is there because, if the user has a negative tax rate (and is receiving supplemental payment from government)
      then there is no tax refund to correct for, for RRSP deposit after tax can just equal amount invested.
      */
-    (amount, taxRate)=>amount * taxRate) //RRSP withdrawals are taxed according to the retirement tax rate
+    (amount, taxRate)=>amount * taxRate, //RRSP withdrawals are taxed according to the retirement tax rate,
+    (futureValue,amountTaxedOnWithdrawal, retirementTaxRate)=>{
+      return Number.isFinite(futureValue) ? //then amount taxed on withdrawal must also be finite.
+        futureValue - amountTaxedOnWithdrawal : //otherwise future value is infinite.
+        (retirementTaxRate == 100 ? 0 : Number.POSITIVE_INFINITY)
+    })
 }
+
+
+
+/*
+
+
+ (futureValue,amountTaxedOnWithdrawal, retirementTaxRate)=>{
+ return Number.isFinite(futureValue) ? //then amount taxed on withdrawal must also be finite.
+ futureValue - amountTaxedOnWithdrawal : //otherwise future value is infinite.
+ (retirementTaxRate == 100 ? 0 : Number.POSITIVE_INFINITY)
+ }
+ */
+//if (and only if) future value is infinite,
+//then any amount taxed > 0 will equal infinity as well.
+//reason that if the tax rate is in (0, 100) the amount left over should be infinity.
+//if tax rate is 100%, amount left over should be 0.
+//0 times infinity is undefined, so must handle this case separately.
 
 /*
  @param {CalculatorInput} input
@@ -112,7 +137,7 @@ export function computeRRSP(input){
  @param {function(number, number)=>number} computeAmountTaxedOnWithdrawal -> a function that computes the amount taxed on the withdrawn investment given the investment future value and estimated tax rate on withdrawal
  @return {AccountResults}
  */
-export function composeResults(input, computeAfterTax, computeAmountTaxedOnWithdrawal){
+export function composeResults(input, computeAfterTax, computeAmountTaxedOnWithdrawal, computeFutureValueAfterTax){
   const nominalRateOfReturn = input.investmentGrowthRate/100
   const inflationRate = input.inflationRate/100
 
@@ -124,7 +149,7 @@ export function composeResults(input, computeAfterTax, computeAmountTaxedOnWithd
 
   const amountTaxedOnWithdrawal = computeAmountTaxedOnWithdrawal(futureValue,input.retirementTaxRate/100)
 
-  const afterTaxFutureValue = futureValue - amountTaxedOnWithdrawal
+  const afterTaxFutureValue = computeFutureValueAfterTax(futureValue,amountTaxedOnWithdrawal, input.retirementTaxRate)
 
   //all computations done internally on unrounded values; results rounded at end for reporting to user at end of investment period.
   return {

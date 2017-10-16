@@ -543,7 +543,7 @@ describe("financial calculator test", function () {
           var amountInvested = 100000000000000000000;
           var yearsInvested = 100000000000000000000;
 
-          var greaterThanMax = "Too much to count.";
+          var infinity = Number.POSITIVE_INFINITY;
 
           var currentTaxRate = 99.99999999999999; //largest possible numeric percent that can be provided.
 
@@ -556,20 +556,20 @@ describe("financial calculator test", function () {
 
           var result = FinancialCalculator.calculate(new _CalculatorInput2.default(input));
 
-          it("should set the RRSP future value to " + greaterThanMax, function () {
-            _assert2.default.strictEqual(result.RRSP.futureValue, greaterThanMax);
+          it("should set the RRSP future value to " + infinity, function () {
+            _assert2.default.strictEqual(result.RRSP.futureValue, infinity);
           });
-          it("should set the RRSP amount taxed on withdrawal to " + greaterThanMax, function () {
-            _assert2.default.strictEqual(result.RRSP.amountTaxedOnWithdrawal, greaterThanMax);
+          it("should set the RRSP amount taxed on withdrawal to " + infinity, function () {
+            _assert2.default.strictEqual(result.RRSP.amountTaxedOnWithdrawal, infinity);
           });
-          it("should set the RRSP future value after tax to " + greaterThanMax, function () {
-            _assert2.default.strictEqual(result.RRSP.afterTaxFutureValue, greaterThanMax);
+          it("should set the RRSP future value after tax to " + infinity, function () {
+            _assert2.default.strictEqual(result.RRSP.afterTaxFutureValue, infinity);
           });
-          it("should set the TSFA future value to " + greaterThanMax, function () {
-            _assert2.default.strictEqual(result.TSFA.futureValue, greaterThanMax);
+          it("should set the TSFA future value to " + infinity, function () {
+            _assert2.default.strictEqual(result.TSFA.futureValue, infinity);
           });
-          it("should set the TSFA future value after tax to " + greaterThanMax, function () {
-            _assert2.default.strictEqual(result.TSFA.afterTaxFutureValue, greaterThanMax);
+          it("should set the TSFA future value after tax to " + infinity, function () {
+            _assert2.default.strictEqual(result.TSFA.afterTaxFutureValue, infinity);
           });
         });
       });
@@ -946,6 +946,7 @@ describe("financial calculator test", function () {
       });
     });
   });
+  //expected values taken from: http://financeformulas.net/Real_Rate_of_Return.html
   describe("test computeRealRateOfReturn", function () {
 
     describe("nominal is 0", function () {
@@ -1035,7 +1036,6 @@ describe("financial calculator test", function () {
       });
     });
   });
-
   /*expected values taken from: http://financeformulas.net/Future_Value.html#calcHeader */
   describe("test computeFutureValue", function () {
 

@@ -2,12 +2,16 @@ export default class CalculatorOutput{
   /*
    @param {AccountResults} TSFA
    @param {AccountResults} RRSP
+   @param {string} betterAccount
    */
   constructor({TSFA, RRSP}){
      this.TSFA = TSFA ? new AccountResults(TSFA) : null,
      this.RRSP = RRSP ? new AccountResults(RRSP) : null
+     this.betterAccount = determineBetterAccount(this.TSFA.afterTaxFutureValue, this.RRSP.afterTaxFutureValue)
   }
 }
+
+const BIG_NUMBER="Too big to count"
 
 export class AccountResults{
   /*
@@ -17,13 +21,18 @@ export class AccountResults{
    @param {number} afterTaxFutureValue
    */
   constructor({afterTax,futureValue,amountTaxedOnWithdrawal,afterTaxFutureValue}){
-      this.afterTax = Number.isFinite(afterTax) ? afterTax : "Too much to count."
-      //since arguments come from server, can trust that if argument is Infinity or NaN it's because the number is too big
-      //to support normal arithmetic (i.e., Infinity-infinity = NaN).
-      //as opposed to calculator input, where values that fail the Number.isFinite check might just be invalid, since they
-      //come from client.
-      this.futureValue = Number.isFinite(futureValue) ? futureValue : "Too much to count."
-      this.amountTaxedOnWithdrawal = Number.isFinite(amountTaxedOnWithdrawal) ? amountTaxedOnWithdrawal : "Too much to count."
-      this.afterTaxFutureValue = Number.isFinite(afterTaxFutureValue) ? afterTaxFutureValue : "Too much to count."
+      //arguments come from server, so don't require input checking.
+      //substitute Number.POSITIVE_INFINITY for string "Infinity" because
+      //Number.POSITIVE_INFINITY becomes 'null' when it hits the client.
+      this.afterTax = Number.isFinite(afterTax)? afterTax : BIG_NUMBER
+      this.futureValue = Number.isFinite(futureValue) ? futureValue : BIG_NUMBER
+      this.amountTaxedOnWithdrawal = Number.isFinite(amountTaxedOnWithdrawal) ? amountTaxedOnWithdrawal : BIG_NUMBER
+      this.afterTaxFutureValue = Number.isFinite(afterTaxFutureValue) ? afterTaxFutureValue : BIG_NUMBER
   }
+}
+
+function determineBetterAccount(TSFAFutureValue, RRSPFutureValue){
+  if(TSFAFutureValue === RRSPFutureValue) return "either"
+  if(TSFAFutureValue === BIG_NUMBER || TSFAFutureValue > RRSPFutureValue) return "TSFA"
+  return "RRSP"
 }

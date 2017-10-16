@@ -277,8 +277,8 @@
         displayReturnsForTaxAccount(TSFAResults, TSFA)
         displayReturnsForTaxAccount(RRSPResults, RRSP)
         //figure out which account yields better future value after tax
-        //note: in certain exceptional cases, result can be Infinity
-        alert(TSFA.afterTaxFutureValue + " "+RRSP.afterTaxFutureValue)
+        //note: server sends back "Too much to count" if the computed results tip into infinity.
+        alert("TSFA: "+TSFA.afterTaxFutureValue+" RRSP: "+RRSP.afterTaxFutureValue)
         const betterAccount = TSFA.afterTaxFutureValue == RRSP.afterTaxFutureValue ? "either" :
           (TSFA.afterTaxFutureValue > RRSP.afterTaxFutureValue ? "TSFA" : "RRSP")
         highlightAfterTaxFutureCellFor(betterAccount)

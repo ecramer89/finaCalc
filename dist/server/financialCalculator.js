@@ -147,7 +147,9 @@ function composeResults(input, computeAfterTax, computeAmountTaxedOnWithdrawal) 
 
   var amountTaxedOnWithdrawal = computeAmountTaxedOnWithdrawal(futureValue, input.retirementTaxRate / 100);
 
-  var afterTaxFutureValue = futureValue - amountTaxedOnWithdrawal;
+  var afterTaxFutureValue = Number.isFinite(futureValue) && Number.isFinite(amountTaxedOnWithdrawal) ? futureValue - amountTaxedOnWithdrawal : Number.POSITIVE_INFINITY; //handle edge case; if big enough numbers provided, future value and amount taxed
+  //can both be positive infinity, in which case, infinity-infinity = NaN.
+  //although infinity - infinity is probably undefined, in this context seems more sensible to say that result is also infinity.
 
   //all computations done internally on unrounded values; results rounded at end for reporting to user at end of investment period.
   return {
