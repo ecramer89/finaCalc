@@ -273,14 +273,9 @@
         //show otherwise hidden results panel
         resultsPanel.style.visibility = "visible"
         resultsPanel.style.display = "inline"
-        const {TSFA, RRSP} = data
+        const {TSFA, RRSP, betterAccount} = data
         displayReturnsForTaxAccount(TSFAResults, TSFA)
         displayReturnsForTaxAccount(RRSPResults, RRSP)
-        //figure out which account yields better future value after tax
-        //note: server sends back "Too much to count" if the computed results tip into infinity.
-        alert("TSFA: "+TSFA.afterTaxFutureValue+" RRSP: "+RRSP.afterTaxFutureValue)
-        const betterAccount = TSFA.afterTaxFutureValue == RRSP.afterTaxFutureValue ? "either" :
-          (TSFA.afterTaxFutureValue > RRSP.afterTaxFutureValue ? "TSFA" : "RRSP")
         highlightAfterTaxFutureCellFor(betterAccount)
         summarize(betterAccount)
       }

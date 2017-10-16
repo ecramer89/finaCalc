@@ -158,6 +158,10 @@ describe("financial calculator test", function () {
         it("since the tax rate on withdrawal is less than the tax rate on deposit, the RRSP future value should exceed the TSFA", function () {
           _assert2.default.ok(result.RRSP.afterTaxFutureValue > result.TSFA.afterTaxFutureValue);
         });
+
+        it("the betterAccount should equal RRSP", function () {
+          _assert2.default.strictEqual(result.betterAccount, "RRSP");
+        });
       });
 
       describe("TSFA is the better choice", function () {
@@ -245,6 +249,10 @@ describe("financial calculator test", function () {
         it("since the tax rate on withdrawal is greater than the tax rate on deposit, the TSFA future value should exceed the RRSP", function () {
           _assert2.default.ok(result.RRSP.afterTaxFutureValue < result.TSFA.afterTaxFutureValue);
         });
+
+        it("the betterAccount should equal TSFA", function () {
+          _assert2.default.strictEqual(result.betterAccount, "TSFA");
+        });
       });
 
       describe("both are equally good", function () {
@@ -331,6 +339,10 @@ describe("financial calculator test", function () {
 
         it("since the tax rate on withdrawal equals the tax rate on deposit, the TSFA future value should equal the RRSP", function () {
           _assert2.default.strictEqual(result.RRSP.afterTaxFutureValue, result.TSFA.afterTaxFutureValue);
+        });
+
+        it("the betterAccount should be either", function () {
+          _assert2.default.strictEqual(result.betterAccount, "either");
         });
       });
 
@@ -501,6 +513,10 @@ describe("financial calculator test", function () {
             it("the RRSP after tax future value should be 0", function () {
               _assert2.default.strictEqual(result.RRSP.afterTaxFutureValue, 0);
             });
+
+            it("the better account is the TSFA", function () {
+              _assert2.default.strictEqual(result.betterAccount, "TSFA");
+            });
           });
 
           describe("is negative", function () {
@@ -531,6 +547,10 @@ describe("financial calculator test", function () {
             it("the RRSP after tax future value should exceed the TSFA after tax future value", function () {
               _assert2.default.ok(result.RRSP.afterTaxFutureValue > result.TSFA.afterTaxFutureValue);
             });
+
+            it("the better account is the RRSP", function () {
+              _assert2.default.ok(result.betterAccount, "RRSP");
+            });
           });
         });
 
@@ -543,7 +563,7 @@ describe("financial calculator test", function () {
           var amountInvested = 100000000000000000000;
           var yearsInvested = 100000000000000000000;
 
-          var infinity = Number.POSITIVE_INFINITY;
+          var bigNumber = "Too big to count";
 
           var currentTaxRate = 99.99999999999999; //largest possible numeric percent that can be provided.
 
@@ -556,20 +576,66 @@ describe("financial calculator test", function () {
 
           var result = FinancialCalculator.calculate(new _CalculatorInput2.default(input));
 
-          it("should set the RRSP future value to " + infinity, function () {
-            _assert2.default.strictEqual(result.RRSP.futureValue, infinity);
+          it("should set the RRSP future value to " + bigNumber, function () {
+            _assert2.default.strictEqual(result.RRSP.futureValue, bigNumber);
           });
-          it("should set the RRSP amount taxed on withdrawal to " + infinity, function () {
-            _assert2.default.strictEqual(result.RRSP.amountTaxedOnWithdrawal, infinity);
+          it("should set the RRSP amount taxed on withdrawal to " + bigNumber, function () {
+            _assert2.default.strictEqual(result.RRSP.amountTaxedOnWithdrawal, bigNumber);
           });
-          it("should set the RRSP future value after tax to " + infinity, function () {
-            _assert2.default.strictEqual(result.RRSP.afterTaxFutureValue, infinity);
+          it("should set the RRSP future value after tax to " + bigNumber, function () {
+            _assert2.default.strictEqual(result.RRSP.afterTaxFutureValue, bigNumber);
           });
-          it("should set the TSFA future value to " + infinity, function () {
-            _assert2.default.strictEqual(result.TSFA.futureValue, infinity);
+          it("should set the TSFA future value to " + bigNumber, function () {
+            _assert2.default.strictEqual(result.TSFA.futureValue, bigNumber);
           });
-          it("should set the TSFA future value after tax to " + infinity, function () {
-            _assert2.default.strictEqual(result.TSFA.afterTaxFutureValue, infinity);
+          it("should set the TSFA future value after tax to " + bigNumber, function () {
+            _assert2.default.strictEqual(result.TSFA.afterTaxFutureValue, bigNumber);
+          });
+
+          it("the betterAccount should be either", function () {
+            _assert2.default.strictEqual(result.betterAccount, "either");
+          });
+
+          describe("handles intermediate infinities", function () {
+            var amountInvested = 100000000000000000000;
+            var yearsInvested = 100000000000000000000;
+
+            var bigNumber = "Too big to count";
+
+            var currentTaxRate = 99.99999999999999; //largest possible numeric percent that can be provided.
+
+
+            describe("TSFA but not RRSP future value after tax is infinity", function () {
+              var retirementTaxRate = 100;
+
+              var input = _extends({}, baseInput, {
+                amountInvested: amountInvested + "$",
+                currentTaxRate: "" + currentTaxRate,
+                yearsInvested: yearsInvested,
+                retirementTaxRate: retirementTaxRate + "%"
+              });
+              var result = FinancialCalculator.calculate(new _CalculatorInput2.default(input));
+              it("should set the RRSP future value to " + bigNumber, function () {
+                _assert2.default.strictEqual(result.RRSP.futureValue, bigNumber);
+              });
+              it("should set the RRSP amount taxed on withdrawal to " + bigNumber, function () {
+                _assert2.default.strictEqual(result.RRSP.amountTaxedOnWithdrawal, bigNumber);
+              });
+              //assume that any non zero percentage of infinity future value remaining is also infinity.
+              it("should set the RRSP future value after tax to 0, since we tax 100% of infinity", function () {
+                _assert2.default.strictEqual(result.RRSP.afterTaxFutureValue, 0);
+              });
+              it("should set the TSFA future value to " + bigNumber, function () {
+                _assert2.default.strictEqual(result.TSFA.futureValue, bigNumber);
+              });
+              it("should set the TSFA future value after tax to " + bigNumber, function () {
+                _assert2.default.strictEqual(result.TSFA.afterTaxFutureValue, bigNumber);
+              });
+
+              it("the betterAccount should be TSFA", function () {
+                _assert2.default.strictEqual(result.betterAccount, "TSFA");
+              });
+            });
           });
         });
       });

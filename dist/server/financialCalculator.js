@@ -97,7 +97,10 @@ function computeTSFA(input) {
   }, //TSFA deposits made with after-tax dollars, so net cost is just the amount the user invests
   function () {
     return 0;
-  } //TSFA withdrawals are not taxed, so the tax on withdrawal is just 0.
+  }, //TSFA withdrawals are not taxed, so the tax on withdrawal is just 0.
+  function (futureValue) {
+    return futureValue;
+  } //future value after tax is just future value
   );
 }
 
@@ -126,8 +129,28 @@ function computeRRSP(input) {
    */
   function (amount, taxRate) {
     return amount * taxRate;
-  }); //RRSP withdrawals are taxed according to the retirement tax rate
+  }, //RRSP withdrawals are taxed according to the retirement tax rate,
+  function (futureValue, amountTaxedOnWithdrawal, retirementTaxRate) {
+    return Number.isFinite(futureValue) ? //then amount taxed on withdrawal must also be finite.
+    futureValue - amountTaxedOnWithdrawal : //otherwise future value is infinite.
+    retirementTaxRate == 100 ? 0 : Number.POSITIVE_INFINITY;
+  });
 }
+
+/*
+
+
+ (futureValue,amountTaxedOnWithdrawal, retirementTaxRate)=>{
+ return Number.isFinite(futureValue) ? //then amount taxed on withdrawal must also be finite.
+ futureValue - amountTaxedOnWithdrawal : //otherwise future value is infinite.
+ (retirementTaxRate == 100 ? 0 : Number.POSITIVE_INFINITY)
+ }
+ */
+//if (and only if) future value is infinite,
+//then any amount taxed > 0 will equal infinity as well.
+//reason that if the tax rate is in (0, 100) the amount left over should be infinity.
+//if tax rate is 100%, amount left over should be 0.
+//0 times infinity is undefined, so must handle this case separately.
 
 /*
  @param {CalculatorInput} input
@@ -135,7 +158,7 @@ function computeRRSP(input) {
  @param {function(number, number)=>number} computeAmountTaxedOnWithdrawal -> a function that computes the amount taxed on the withdrawn investment given the investment future value and estimated tax rate on withdrawal
  @return {AccountResults}
  */
-function composeResults(input, computeAfterTax, computeAmountTaxedOnWithdrawal) {
+function composeResults(input, computeAfterTax, computeAmountTaxedOnWithdrawal, computeFutureValueAfterTax) {
   var nominalRateOfReturn = input.investmentGrowthRate / 100;
   var inflationRate = input.inflationRate / 100;
 
@@ -147,9 +170,7 @@ function composeResults(input, computeAfterTax, computeAmountTaxedOnWithdrawal) 
 
   var amountTaxedOnWithdrawal = computeAmountTaxedOnWithdrawal(futureValue, input.retirementTaxRate / 100);
 
-  var afterTaxFutureValue = Number.isFinite(futureValue) && Number.isFinite(amountTaxedOnWithdrawal) ? futureValue - amountTaxedOnWithdrawal : Number.POSITIVE_INFINITY; //handle edge case; if big enough numbers provided, future value and amount taxed
-  //can both be positive infinity, in which case, infinity-infinity = NaN.
-  //although infinity - infinity is probably undefined, in this context seems more sensible to say that result is also infinity.
+  var afterTaxFutureValue = computeFutureValueAfterTax(futureValue, amountTaxedOnWithdrawal, input.retirementTaxRate);
 
   //all computations done internally on unrounded values; results rounded at end for reporting to user at end of investment period.
   return {

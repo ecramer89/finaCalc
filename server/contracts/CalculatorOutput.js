@@ -2,7 +2,7 @@ export default class CalculatorOutput{
   /*
    @param {AccountResults} TSFA
    @param {AccountResults} RRSP
-   @param {string} betterAccount
+   @param {string} betterAccount name (TSFA or RRSP) of account with greater future value; either if have the same future value.
    */
   constructor({TSFA, RRSP}){
      this.TSFA = TSFA ? new AccountResults(TSFA) : null,
